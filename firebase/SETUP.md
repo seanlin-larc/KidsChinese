@@ -7,10 +7,11 @@ There is no new project, no new account and no new PIN.
 
 | Already done (Kids Games) | Still to do |
 |---|---|
-| Accounts YC, JY, SL, CJ, Guest (`<code>@kidsgames.invalid`), PIN = password | Add 嬤 (section 3) |
+| Accounts YC, JY, SL, CJ, Guest (`<code>@kidsgames.invalid`), PIN = password | Test 嬤 on a phone or iPad (section 3, step 6) |
 | `players/{uid}` documents with the codes | Sign in as SL and set each child's level (section 2) |
 | Rules with the KidsChinese block (2026-11-23) | |
 | Rules update: level 4, parents study, 嬤 (2026-11-23) | |
+| 嬤 (`AMA`): account, PIN and `players/{uid}` document (2026-11-23) | |
 | API key restriction: `https://seanlin-larc.github.io/*`, `http://localhost:8000/*` | |
 | `admin/reset-pin.mjs` in the Kids Games repo | |
 
@@ -20,7 +21,8 @@ The rules for both sites are in **one file**: `firebase/firestore.rules` in the 
 The KidsChinese part is the block "KidsChinese flash cards" near the end (collection `chinese`).
 
 1. Make sure the Kids Games file has that block. Status (2026-11-23): Sean published the updated file,
-   and Kids Games `main` has the same file (commit `b91fa7b`, from `docs/kidsgames-rules-update.patch`).
+   and Kids Games `main` has the same rules (commit `b91fa7b`, from `docs/kidsgames-rules-update.patch`;
+   `dbdd1d8` changes only the repo name in comments).
 2. Open the [Firebase console for kidsgame-7a262](https://console.firebase.google.com/project/kidsgame-7a262/firestore) → **Firestore Database** → **Rules**.
 3. Keep a copy of the current rules.
 4. Replace all of the text with the **complete** Kids Games file. Click **Publish**.
@@ -45,7 +47,7 @@ See [docs/2026-11-23_kidsgames-rules-update-handoff.md](../docs/2026-11-23_kidsg
 
 ## 2. Set the levels
 
-1. Open https://seanlin-larc.github.io/KidsChinese/ and sign in as **SL** with the Kids Games PIN.
+1. Open https://seanlin-larc.github.io/kidsChinese/ and sign in as **SL** with the Kids Games PIN.
 2. The parent page shows YC and JY. Set each child's **Level** (程度).
    The levels are 學前 Starters, 初階 Beginner, 四年級 Grade 4 and 小學 Elementary (see README, "Levels").
    A parent sets their own level in **設定 Settings** (on their study page).
@@ -57,7 +59,7 @@ See [docs/2026-11-23_kidsgames-rules-update-handoff.md](../docs/2026-11-23_kidsg
 (a test player). The page shows 嬤; the code in Firebase is `AMA`. Do the steps in this order.
 
 1. **Authentication user — done (2026-11-22).** `ama@kidsgames.invalid`, Email/Password.
-2. **PIN.** The password must be the 6-digit PIN: the sign-in page has a number pad with 6 digits only.
+2. **PIN — done (2026-11-23).** The password must be the 6-digit PIN: the sign-in page has a number pad with 6 digits only.
    If you typed another password when you made the user, set a PIN on your computer, in the Kids Games
    repo `admin/` folder:
 
@@ -66,7 +68,7 @@ See [docs/2026-11-23_kidsgames-rules-update-handoff.md](../docs/2026-11-23_kidsg
    ```
 
    You type the PIN at a hidden prompt. Do not write the PIN in a chat, a note or a file.
-3. **Firestore `players/{uid}` document.** Without it, the rules do not know who she is.
+3. **Firestore `players/{uid}` document — done (2026-11-23).** Without it, the rules do not know who she is.
    1. Firebase console → **Authentication** → **Users**. In the row `ama@kidsgames.invalid`, point at the
       **User UID** and click the copy icon. (The list shows only the start of the UID.)
    2. Firebase console → **Firestore Database** → **Data** → collection **players** → **Add document**.
@@ -75,7 +77,7 @@ See [docs/2026-11-23_kidsgames-rules-update-handoff.md](../docs/2026-11-23_kidsg
    5. Check: the new document sits next to the other five, and each has one field `code`.
 4. **Rules update — done (2026-11-23).** Kids Games `main` has it (commit `b91fa7b`), and Sean published
    the complete file (section 1).
-5. **Put the new KidsChinese page online:** merge the KidsChinese branch to `main`. GitHub Pages updates
+5. **Put the new KidsChinese page online — done (2026-11-23):** the branch is merged to `main`. GitHub Pages updates
    in about a minute. (Steps 4 and 5 can be in either order. 嬤 can use the site only after both.)
 6. **Test** on a phone or iPad:
    1. Open the site. Tap **嬤** (next to SL and CJ), then type her PIN.
@@ -85,8 +87,7 @@ See [docs/2026-11-23_kidsgames-rules-update-handoff.md](../docs/2026-11-23_kidsg
 
 Notes:
 
-- 嬤 is not on the Kids Games sign-in page. To add her there, add one line to `shared/session.js` in the
-  Kids Games repo (a Kids Games change; not done).
+- 嬤 is not on the Kids Games sign-in page, and she stays off it (Sean's decision, 2026-11-23).
 - Her data is `chinese/AMA`. Firestore makes it at her first answer. SL and CJ cannot see her progress,
   and she cannot see theirs.
 - The wrong-PIN lock (10 tries, 30 minutes) works for 嬤 the same as for the others.

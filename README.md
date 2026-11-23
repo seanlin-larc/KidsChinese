@@ -67,7 +67,7 @@ KidsChinese uses the Kids Games project (`kidsgame-7a262`), so the accounts, PIN
 One step is left: publish the Kids Games rules file that has the KidsChinese block, then set the levels.
 See [firebase/SETUP.md](firebase/SETUP.md). Until the rules are published, the site shows "Cannot read progress".
 
-Status (2026-11-23): Sean published the rules update. Kids Games `main` has the same file (commit `b91fa7b`).
+Status (2026-11-23): Sean published the rules update. Kids Games `main` has the same rules (commit `b91fa7b`; `dbdd1d8` changes only the repo name in comments).
 
 ## Accounts and account control
 
@@ -117,7 +117,7 @@ Then open http://localhost:8000. Opening `index.html` directly from disk does no
 1. On GitHub, open **Settings → Pages**.
 2. Set **Source** to *Deploy from a branch*.
 3. Select branch `main` and folder `/ (root)`, then click **Save**.
-4. After about a minute, the site is at `https://<your-user>.github.io/KidsChinese/`.
+4. After about a minute, the site is at `https://<your-user>.github.io/kidsChinese/`.
 
 On an iPad or phone, use **Share → Add to Home Screen** to get an app icon.
 

@@ -51,7 +51,7 @@ AMA 沒有加入 `shared/session.js`，所以她不在 Kids Games 的登入頁�
 ## 步驟
 
 1. 在 `kidsgames` 的 checkout 中：`git checkout -b kidschinese-rules-update origin/main`。
-2. `git apply ../KidsChinese/docs/kidsgames-rules-update.patch`（這個 patch 以 `main` 的 `ccfd684` 為基準）。
+2. `git apply ../kidsChinese/docs/kidsgames-rules-update.patch`（這個 patch 以 `main` 的 `ccfd684` 為基準）。
 3. `cd firebase && npm install && npm test`。預期 19 個全部通過。
 4. 推送分支。只有在 Sean 要求時才合併到 `main`。
 5. 由 Sean 發布完整的檔案：見 KidsChinese 的 `firebase/SETUP_zhtw.md` 第 3 節。
@@ -67,7 +67,10 @@ AMA 沒有加入 `shared/session.js`，所以她不在 Kids Games 的登入頁�
 - 一個有推送權限的 Claude Code 工作階段把 patch 原樣套用到 `seanlin-larc/kidsgames`。
 - Kids Games 規則測試：19 個全部通過。KidsChinese 的 `tests/accounts.test.mjs` 用新規則檔也通過。
 - Kids Games 的 `main`：從 `ccfd684` 快轉到 `b91fa7b`。Kids Games 的頁面沒有改變。
-- Sean 已在 Firebase 主控台發布 Kids Games `main` 的完整檔案。
+- 之後 patch 在 4 行註解裡改用新的 repo 名稱 `kidsChinese`（本 repo 的 commit `12973ba`）。
+  Kids Games 的 `main` 也有這個修改（`dbdd1d8`，只改註解）。已發布的規則作用相同。
+- Sean 已在 Firebase 主控台發布 Kids Games `main`（`b91fa7b`）的完整檔案。
+- Sean 已設定嬤的 PIN 碼和她的 `players/{uid}` 文件（`code: "AMA"`）。
 - 附帶影響：Kids Games 規則讓每個有 `players/{uid}` 文件的帳號都有家人權限。
   所以 AMA 也能讀取 Kids Games 的成績、儲存自己的結果，和 Guest 一樣。
   她不能修改拼圖庫（只有 SL 和 CJ 可以）。

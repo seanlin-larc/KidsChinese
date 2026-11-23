@@ -57,7 +57,7 @@ KidsChinese 使用 Kids Games 專案（`kidsgame-7a262`），所以帳號、PIN 
 只剩一步：發布含有 KidsChinese 區塊的 Kids Games 規則檔，然後設定程度。
 見 [firebase/SETUP_zhtw.md](firebase/SETUP_zhtw.md)。規則發布之前，網站會顯示「Cannot read progress」。
 
-狀態（2026-11-23）：Sean 已發布規則更新。Kids Games 的 `main` 有相同的檔案（commit `b91fa7b`）。
+狀態（2026-11-23）：Sean 已發布規則更新。Kids Games 的 `main` 有相同的規則（commit `b91fa7b`；`dbdd1d8` 只修改註解裡的 repo 名稱）。
 
 ## 帳號和帳號管理
 
@@ -107,7 +107,7 @@ python3 -m http.server 8000
 1. 在 GitHub 開啟 **Settings → Pages**。
 2. 把 **Source** 設為 *Deploy from a branch*。
 3. 選擇分支 `main` 和資料夾 `/ (root)`，然後按 **Save**。
-4. 大約一分鐘後，網站會在 `https://<your-user>.github.io/KidsChinese/`。
+4. 大約一分鐘後，網站會在 `https://<your-user>.github.io/kidsChinese/`。
 
 在 iPad 或手機上，用 **分享 → 加入主畫面** 取得 App 圖示。
 

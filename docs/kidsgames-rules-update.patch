@@ -1,12 +1,14 @@
 diff --git a/README.md b/README.md
-index ad684a9..305f499 100644
+index ad684a9..c5762b8 100644
 --- a/README.md
 +++ b/README.md
-@@ -111,7 +111,9 @@ const ctx = await gate.enterGame({ bar: document.getElementById('who') });  // n
+@@ -110,8 +110,10 @@ const ctx = await gate.enterGame({ bar: document.getElementById('who') });  // n
+ 
  ### KidsChinese uses this project
  
- The KidsChinese flash cards (https://seanlin-larc.github.io/KidsChinese/, repo `seanlin-larc/KidsChinese`)
+-The KidsChinese flash cards (https://seanlin-larc.github.io/KidsChinese/, repo `seanlin-larc/KidsChinese`)
 -use this Firebase project and the same accounts. YC and JY are learners. SL and CJ are parents. Guest has no access.
++The KidsChinese flash cards (https://seanlin-larc.github.io/kidsChinese/, repo `seanlin-larc/kidsChinese`)
 +use this Firebase project and the same accounts. YC and JY are learners. SL, CJ and AMA (嬤, grandma) are parents;
 +parents also study with their own progress. Guest has no access. AMA is a KidsChinese account only: it has a
 +`players/{uid}` document, but it is not on the Kids Games sign-in page.
@@ -14,7 +16,7 @@ index ad684a9..305f499 100644
  - Its data is in the Firestore collection `chinese`. Its rules are the "KidsChinese" block in
    `firebase/firestore.rules`. Tests: `firebase/tests/kidschinese.rules.test.mjs`.
 diff --git a/firebase/firestore.rules b/firebase/firestore.rules
-index d3d473c..58d8b15 100644
+index d3d473c..d05089d 100644
 --- a/firebase/firestore.rules
 +++ b/firebase/firestore.rules
 @@ -1,7 +1,7 @@
@@ -26,15 +28,18 @@ index d3d473c..58d8b15 100644
  // can read or write. The KidsChinese site uses this project too (block near the end).
  service cloud.firestore {
    match /databases/{database}/documents {
-@@ -136,27 +136,36 @@ service cloud.firestore {
+@@ -135,28 +135,37 @@ service cloud.firestore {
+       allow update, delete: if false;
      }
  
-     // ---------- KidsChinese flash cards (https://seanlin-larc.github.io/KidsChinese/) ----------
+-    // ---------- KidsChinese flash cards (https://seanlin-larc.github.io/KidsChinese/) ----------
 -    // KidsChinese uses this project and these accounts. Learners: YC, JY. Parents: SL, CJ.
++    // ---------- KidsChinese flash cards (https://seanlin-larc.github.io/kidsChinese/) ----------
 +    // KidsChinese uses this project and these accounts. Children: YC, JY. Parents: SL, CJ, AMA (嬤).
      // Guest has no access. The role comes from players/{uid}.code, like the rest of this file.
-     // Tests: firebase/tests/kidschinese.rules.test.mjs. App: repo seanlin-larc/KidsChinese.
+-    // Tests: firebase/tests/kidschinese.rules.test.mjs. App: repo seanlin-larc/KidsChinese.
 -    //   chinese/{code}                 { level, updatedAt, updatedBy }   parents set the level
++    // Tests: firebase/tests/kidschinese.rules.test.mjs. App: repo seanlin-larc/kidsChinese.
 +    //   chinese/{code}                 { level, updatedAt, updatedBy }   parents set the level (1–4)
      //   chinese/{code}/data/summary    { stars, streak, daily, updatedAt }
      //   chinese/{code}/data/prefs      { showPinyin, showEnglish, sessionSize, speechRate, avatar, updatedAt }
@@ -108,9 +113,16 @@ index d3d473c..58d8b15 100644
          allow delete: if false;
        }
 diff --git a/firebase/tests/kidschinese.rules.test.mjs b/firebase/tests/kidschinese.rules.test.mjs
-index 2460687..0539ffa 100644
+index 2460687..fa45205 100644
 --- a/firebase/tests/kidschinese.rules.test.mjs
 +++ b/firebase/tests/kidschinese.rules.test.mjs
+@@ -1,5 +1,5 @@
+ // Tests for the KidsChinese block of firebase/firestore.rules (collection "chinese").
+-// KidsChinese (repo seanlin-larc/KidsChinese) uses this Firebase project and these accounts.
++// KidsChinese (repo seanlin-larc/kidsChinese) uses this Firebase project and these accounts.
+ // Run in the firebase/ folder: npm install, then npm test (needs Java 11 or later).
+ import { readFile } from 'node:fs/promises';
+ import { after, before, beforeEach, test } from 'node:test';
 @@ -8,11 +8,11 @@ import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, u
  
  let env;

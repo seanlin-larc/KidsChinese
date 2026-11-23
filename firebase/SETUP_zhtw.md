@@ -7,10 +7,11 @@ KidsChinese 使用 **Kids Games** 的 Firebase 專案（`kidsgame-7a262`）和�
 
 | 已完成（Kids Games） | 還要做 |
 |---|---|
-| 帳號 YC、JY、SL、CJ、Guest（`<code>@kidsgames.invalid`），PIN 碼 = 密碼 | 加入嬤（第 3 節） |
+| 帳號 YC、JY、SL、CJ、Guest（`<code>@kidsgames.invalid`），PIN 碼 = 密碼 | 在手機或 iPad 上測試嬤（第 3 節第 6 步） |
 | 含有代號的 `players/{uid}` 文件 | 用 SL 登入，設定每個孩子的程度（第 2 節） |
 | 含有 KidsChinese 區塊的規則（2026-11-23） | |
 | 規則更新：第 4 級、家長練習、嬤（2026-11-23） | |
+| 嬤（`AMA`）：帳號、PIN 碼和 `players/{uid}` 文件（2026-11-23） | |
 | API 金鑰限制：`https://seanlin-larc.github.io/*`、`http://localhost:8000/*` | |
 | Kids Games repo 裡的 `admin/reset-pin.mjs` | |
 
@@ -20,7 +21,8 @@ KidsChinese 使用 **Kids Games** 的 Firebase 專案（`kidsgame-7a262`）和�
 KidsChinese 的部分是接近結尾的「KidsChinese flash cards」區塊（`chinese` 集合）。
 
 1. 確認 Kids Games 的檔案有這個區塊。狀態（2026-11-23）：Sean 已發布更新後的檔案，
-   而且 Kids Games 的 `main` 有相同的檔案（commit `b91fa7b`，來自 `docs/kidsgames-rules-update.patch`）。
+   而且 Kids Games 的 `main` 有相同的規則（commit `b91fa7b`，來自 `docs/kidsgames-rules-update.patch`；
+   `dbdd1d8` 只修改註解裡的 repo 名稱）。
 2. 開啟 [kidsgame-7a262 的 Firebase 主控台](https://console.firebase.google.com/project/kidsgame-7a262/firestore) → **Firestore Database** → **Rules**。
 3. 保留一份目前規則的副本。
 4. 用**完整的** Kids Games 檔案取代所有文字。按 **Publish**。
@@ -45,7 +47,7 @@ Kids Games 的規則沒有改變。
 
 ## 2. 設定程度
 
-1. 開啟 https://seanlin-larc.github.io/KidsChinese/，用 **SL** 和 Kids Games 的 PIN 碼登入。
+1. 開啟 https://seanlin-larc.github.io/kidsChinese/，用 **SL** 和 Kids Games 的 PIN 碼登入。
 2. 家長頁會顯示 YC 和 JY。設定每個孩子的**程度**（Level）。
    程度有 學前 Starters、初階 Beginner、四年級 Grade 4 和 小學 Elementary（見 README 的「程度」）。
    家長在自己練習頁的 **設定 Settings** 裡設定自己的程度。
@@ -57,7 +59,7 @@ Kids Games 的規則沒有改變。
 （測試玩家）。頁面顯示「嬤」；Firebase 裡的代號是 `AMA`。請依照順序做。
 
 1. **Authentication 使用者——已完成（2026-11-22）。** `ama@kidsgames.invalid`，電子郵件／密碼。
-2. **PIN 碼。** 密碼必須是 6 位數的 PIN 碼：登入頁的數字鍵盤只能輸入 6 位數字。
+2. **PIN 碼——已完成（2026-11-23）。** 密碼必須是 6 位數的 PIN 碼：登入頁的數字鍵盤只能輸入 6 位數字。
    如果建立使用者時輸入了別的密碼，請在你的電腦上、Kids Games repo 的 `admin/` 資料夾設定 PIN 碼：
 
    ```bash
@@ -65,7 +67,7 @@ Kids Games 的規則沒有改變。
    ```
 
    PIN 碼在隱藏的提示中輸入。不要把 PIN 碼寫在對話、筆記或檔案裡。
-3. **Firestore 的 `players/{uid}` 文件。** 沒有這份文件，規則就不知道她是誰。
+3. **Firestore 的 `players/{uid}` 文件——已完成（2026-11-23）。** 沒有這份文件，規則就不知道她是誰。
    1. Firebase 主控台 → **Authentication** → **Users**。在 `ama@kidsgames.invalid` 那一列，指向
       **User UID**，按複製圖示。（清單只顯示 UID 的開頭。）
    2. Firebase 主控台 → **Firestore Database** → **Data** → 集合 **players** → **Add document**。
@@ -74,7 +76,7 @@ Kids Games 的規則沒有改變。
    5. 檢查：新文件和其他五份放在一起，每份都有一個 `code` 欄位。
 4. **規則更新——已完成（2026-11-23）。** Kids Games 的 `main` 已有它（commit `b91fa7b`），Sean 也已發布
    完整的檔案（第 1 節）。
-5. **讓新的 KidsChinese 頁面上線：** 把 KidsChinese 分支合併到 `main`。GitHub Pages 大約一分鐘後更新。
+5. **讓新的 KidsChinese 頁面上線——已完成（2026-11-23）：** 分支已合併到 `main`。GitHub Pages 大約一分鐘後更新。
    （第 4、5 步的順序不拘。兩步都完成後，嬤才能使用網站。）
 6. **在手機或 iPad 上測試：**
    1. 開啟網站。點 **嬤**（在 SL 和 CJ 旁邊），輸入她的 PIN 碼。
@@ -84,8 +86,7 @@ Kids Games 的規則沒有改變。
 
 注意：
 
-- 嬤不在 Kids Games 的登入頁上。要加進去，請在 Kids Games repo 的 `shared/session.js` 加一行
-  （這是 Kids Games 的修改；尚未做）。
+- 嬤不在 Kids Games 的登入頁上，以後也不加（Sean 的決定，2026-11-23）。
 - 她的資料在 `chinese/AMA`。Firestore 會在她第一次作答時建立。SL 和 CJ 看不到她的進度，
   她也看不到他們的。
 - PIN 碼錯誤鎖定（10 次、30 分鐘）對嬤和其他人一樣有效。

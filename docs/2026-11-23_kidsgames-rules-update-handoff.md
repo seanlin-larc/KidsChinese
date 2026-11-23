@@ -51,7 +51,7 @@ AMA is not added to `shared/session.js`, so she is not on the Kids Games sign-in
 ## Steps
 
 1. In a `kidsgames` checkout: `git checkout -b kidschinese-rules-update origin/main`.
-2. `git apply ../KidsChinese/docs/kidsgames-rules-update.patch` (the patch is against `main` at `ccfd684`).
+2. `git apply ../kidsChinese/docs/kidsgames-rules-update.patch` (the patch is against `main` at `ccfd684`).
 3. `cd firebase && npm install && npm test`. Expect 19 of 19 to pass.
 4. Push the branch. Merge to `main` only when Sean asks.
 5. Sean publishes the complete file: see `firebase/SETUP.md` in KidsChinese, section 3.
@@ -67,7 +67,10 @@ AMA is not added to `shared/session.js`, so she is not on the Kids Games sign-in
 - A Claude Code session with push access applied the patch to `seanlin-larc/kidsgames` without changes.
 - Kids Games rules tests: 19 of 19 pass. The KidsChinese `tests/accounts.test.mjs` passes with the new rules file.
 - Kids Games `main`: fast-forward from `ccfd684` to `b91fa7b`. The Kids Games pages did not change.
-- Sean published the complete file from Kids Games `main` in the Firebase console.
+- Later the patch got the new repo name `kidsChinese` in 4 comment lines (commit `12973ba` here).
+  Kids Games `main` has that change too (`dbdd1d8`, comments only). The published rules work the same.
+- Sean published the complete file from Kids Games `main` (`b91fa7b`) in the Firebase console.
+- Sean made 嬤's PIN and her `players/{uid}` document (`code: "AMA"`).
 - Side effect: the Kids Games rules give family access to every account with a `players/{uid}` document.
   So AMA can also read Kids Games scores and save her own results, the same as Guest.
   She cannot change the puzzle library (SL and CJ only).
