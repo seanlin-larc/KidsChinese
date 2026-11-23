@@ -438,7 +438,7 @@ function renderStudy() {
           ${canSpeak() ? '<button class="btn ghost" data-action="speak">🔊 聽 Listen</button>' : ''}
           <div class="grade">
             <button class="btn miss big" data-action="grade" data-got="0">再練習<small>Not yet</small></button>
-            <button class="btn hit big" data-action="grade" data-got="1">我會了<small>Got it!</small></button>
+            <button class="btn hit big" data-action="grade" data-got="1" ${view.hinted ? 'disabled title="You used a hint. This card comes back later."' : ''}>我會了<small>Got it!</small></button>
           </div>` : `
           <button class="btn ghost hint-btn" data-action="hint" ${view.hinted ? 'disabled' : ''}>💡 提示 Hint</button>
           <button class="btn primary big" data-action="flip">翻牌 Flip</button>`}
@@ -483,7 +483,8 @@ function grade(gotIt) {
   }
 }
 
-// The hint shows a short English word on the front. It does not change the score.
+// The hint shows a short English word on the front. After a hint, "Got it" is off,
+// so the child can only choose "Not yet" and the card comes back later.
 function showHint() {
   if (view.flipped || view.hinted) return;
   view.hinted = true;
@@ -739,7 +740,7 @@ document.addEventListener('keydown', (e) => {
   if (!view.flipped && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); view.flipped = true; render(); return; }
   if (!view.flipped && e.key.toLowerCase() === 'h') { showHint(); return; }
   if (view.flipped) {
-    if (e.key === 'ArrowRight' || e.key === '2') grade(true);
+    if (e.key === 'ArrowRight' || e.key === '2') { if (!view.hinted) grade(true); }
     else if (e.key === 'ArrowLeft' || e.key === '1') grade(false);
     else if (e.key.toLowerCase() === 's') speak(view.queue[view.index].w, me.prefs.speechRate);
   }
