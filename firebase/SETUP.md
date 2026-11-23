@@ -30,17 +30,21 @@ What the KidsChinese block allows (the role comes from `players/{uid}.code`):
 | Read own progress | ✓ | — | ✗ |
 | Read the other learner's progress | ✗ | ✓ (both) | ✗ |
 | Save answers, stars, streak | own only | ✗ | ✗ |
-| Change display settings (Pinyin, English, animal) | own only | ✓ | ✗ |
+| Change display settings (Pinyin, English) | own only | ✓ | ✗ |
 | Set a learner's level | ✗ | ✓ | ✗ |
 | Reset a learner's progress | ✗ | ✓ | ✗ |
 
 The Kids Games rules are not changed.
 
+Pending (2026-11-23): the rules change for level 4 (小學 Elementary). See
+`docs/2026-11-23_kidsgames-level4-handoff.md`.
+
 ## 2. Set the levels
 
 1. Open https://seanlin-larc.github.io/KidsChinese/ and sign in as **SL** with the Kids Games PIN.
 2. The parent page shows YC and JY. Set each child's **Level** (程度).
-   Suggested: JY 初級 Beginner, YC 中級 Intermediate.
+   The levels are 學前 Starters, 初階 Beginner, 四年級 Grade 4 and 小學 Elementary (see README, "Levels").
+   小學 Elementary needs the rules change in `docs/2026-11-23_kidsgames-level4-handoff.md`.
 3. Sign out. Sign in as **YC**, do one round, and check that the stars stay after a reload.
 
 ## Shared sign-in: what to know

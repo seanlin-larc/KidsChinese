@@ -1,0 +1,42 @@
+diff --git a/firebase/firestore.rules b/firebase/firestore.rules
+index d3d473c..8eda66b 100644
+--- a/firebase/firestore.rules
++++ b/firebase/firestore.rules
+@@ -139,7 +139,7 @@ service cloud.firestore {
+     // KidsChinese uses this project and these accounts. Learners: YC, JY. Parents: SL, CJ.
+     // Guest has no access. The role comes from players/{uid}.code, like the rest of this file.
+     // Tests: firebase/tests/kidschinese.rules.test.mjs. App: repo seanlin-larc/KidsChinese.
+-    //   chinese/{code}                 { level, updatedAt, updatedBy }   parents set the level
++    //   chinese/{code}                 { level, updatedAt, updatedBy }   parents set the level (1–4)
+     //   chinese/{code}/data/summary    { stars, streak, daily, updatedAt }
+     //   chinese/{code}/data/prefs      { showPinyin, showEnglish, sessionSize, speechRate, avatar, updatedAt }
+     //   chinese/{code}/cards/{cardId}  { box, due, seen, right, updatedAt }
+@@ -167,7 +167,7 @@ service cloud.firestore {
+     function kcLevelOk(d) {
+       return d.keys().hasOnly(['level', 'updatedAt', 'updatedBy'])
+         && d.keys().hasAll(['level', 'updatedAt', 'updatedBy'])
+-        && d.level in [1, 2, 3]
++        && d.level in [1, 2, 3, 4]
+         && d.updatedAt == request.time
+         && d.updatedBy == playerCode();
+     }
+diff --git a/firebase/tests/kidschinese.rules.test.mjs b/firebase/tests/kidschinese.rules.test.mjs
+index 2460687..28d2500 100644
+--- a/firebase/tests/kidschinese.rules.test.mjs
++++ b/firebase/tests/kidschinese.rules.test.mjs
+@@ -151,13 +151,14 @@ test('KidsChinese: only a parent sets the level, with a valid value and own code
+   await assertSucceeds(setDoc(levelRef(db('SL'), 'YC'), level('SL', { level: 3 })));
+   await assertSucceeds(setDoc(levelRef(db('CJ'), 'JY'), level('CJ', { level: 1 })));
+   await assertSucceeds(setDoc(levelRef(db('CJ'), 'JY'), level('CJ', { level: 2 })));
++  await assertSucceeds(setDoc(levelRef(db('SL'), 'JY'), level('SL', { level: 4 })));
+   // A learner cannot change any level, own or other.
+   await assertFails(setDoc(levelRef(db('YC'), 'YC'), level('SL', { level: 3 })));
+   await assertFails(updateDoc(levelRef(db('JY'), 'JY'), { level: 3 }));
+   await assertFails(setDoc(levelRef(db('JY'), 'YC'), level('SL')));
+   await assertFails(setDoc(levelRef(db('Guest'), 'YC'), level('Guest')));
+   // Bad values.
+-  for (const bad of [{ level: 0 }, { level: 4 }, { level: '2' }, { updatedBy: 'CJ' }, { updatedAt: Timestamp.fromMillis(0) }, { extra: 1 }]) {
++  for (const bad of [{ level: 0 }, { level: 5 }, { level: '2' }, { updatedBy: 'CJ' }, { updatedAt: Timestamp.fromMillis(0) }, { extra: 1 }]) {
+     await assertFails(setDoc(levelRef(db('SL'), 'YC'), level('SL', bad)));
+   }
+   // Nobody deletes the level document.

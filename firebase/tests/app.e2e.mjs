@@ -20,6 +20,8 @@ import { DECKS } from '../../js/data/words.js';
 // Number of words of a deck at a level (a round has at most 10 cards).
 const roundSize = (id, lv = 1) => Math.min(10, DECKS.find((d) => d.id === id).words.filter((w) => w.lv <= lv).length);
 const FAMILY = roundSize('family');
+// Number of words at a level (all decks).
+const wordsAt = (lv) => DECKS.flatMap((d) => d.words).filter((w) => w.lv <= lv).length;
 const ANIMALS = roundSize('animals');
 
 const require = createRequire(import.meta.url);
@@ -154,8 +156,8 @@ test('learner: wrong PIN, sign-in, study, progress saved to Firestore', async ()
   await page.waitForSelector('[data-screen=home]');
   assert.equal(await page.evaluate(() => localStorage.getItem('kg-lastPlayer')), 'YC');
   const home = await page.textContent('#app');
-  assert.match(home, /初級 Beginner/);
-  assert.match(home, /of 101 words learned/);
+  assert.match(home, /學前 Starters/);
+  assert.match(home, new RegExp(`of ${wordsAt(1)} words learned`));
   assert.match(home, /Signed in as YC/);
   await shot(page, '03-home');
 
@@ -172,17 +174,16 @@ test('learner: wrong PIN, sign-in, study, progress saved to Firestore', async ()
   await page.click('[data-action=settings]');
   assert.match(await page.textContent('#app'), /a parent sets the level/);
   assert.equal(await page.$('select[name=maxLevel]'), null);
-  await page.click('[data-action=avatar][data-value="🦊"]');
   await page.uncheck('input[name=showEnglish]');
   await page.click('button[type=submit]');
   const prefs = await waitFor(() => fsGet('chinese/YC/data/prefs'));
-  assert.equal(prefs.fields.avatar.stringValue, '🦊');
+  assert.equal(prefs.fields.avatar.stringValue, '🐼', 'the rules need an avatar value; the page does not show it');
   assert.equal(prefs.fields.showEnglish.booleanValue, false);
 
   // A reload keeps the sign-in and the progress.
   await page.reload();
   await page.waitForSelector('[data-screen=home]');
-  assert.match(await page.textContent('header'), /🦊/);
+  assert.equal(await page.textContent('.who'), 'YC', 'no icon next to the name');
   assert.match(await page.textContent('header'), new RegExp('⭐ ' + FAMILY));
   assert.deepEqual(page.errors, []);
 });
@@ -214,7 +215,7 @@ test('parent: sees both learners, sets a level, resets progress', async () => {
   await page.waitForSelector('[data-screen=parent]');
   const text = await page.textContent('#app');
   assert.match(text, /家長 Parent · SL/);
-  assert.match(text, /Level not set yet/);
+  assert.match(text, /Level not set yet\. The app uses 學前 Starters/);
   assert.equal(await page.$$eval('.kid', (x) => x.length), 2);
   await page.click('summary >> nth=0');
   await shot(page, '06-parent');
@@ -246,14 +247,13 @@ test('the learner sees the level the parent set, and the reset', async () => {
   await page.waitForSelector('[data-screen=signin]');
   await signIn(page, 'JY');
   await page.waitForSelector('[data-screen=home]');
-  assert.match(await page.textContent('#app'), /中級 Intermediate/);
-  assert.match(await page.textContent('#app'), /of 175 words learned/);
+  assert.match(await page.textContent('#app'), /初階 Beginner/);
+  assert.match(await page.textContent('#app'), new RegExp(`of ${wordsAt(2)} words learned`));
   await page.click('[data-action=signout]');
   await signIn(page, 'YC');
   await page.waitForSelector('[data-screen=home]');
   assert.match(await page.textContent('header'), /⭐ 0/);
-  assert.match(await page.textContent('#app'), /0 of 101 words learned/);
-  assert.match(await page.textContent('header'), /🦊/, 'avatar kept after reset');
+  assert.match(await page.textContent('#app'), new RegExp(`0 of ${wordsAt(1)} words learned`));
   assert.deepEqual(page.errors, []);
 });
 

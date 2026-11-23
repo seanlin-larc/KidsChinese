@@ -1,4 +1,5 @@
 import { DECKS, cardId } from './data/words.js';
+import { LEVELS } from './data/levels.js';
 import { syllables, toZhuyinParts, toToneMarked } from './pinyin.js';
 import * as srs from './srs.js';
 import { speak, canSpeak, hasMandarinVoice } from './speech.js';
@@ -11,13 +12,9 @@ const DAILY_GOAL = 10;
 const PERFECT_BONUS = 3;
 const PIN_LENGTH = 6;
 const LAST_KEY = 'kg-lastPlayer';    // the last account picked on this device (shared with Kids Games)
-const AVATARS = ['🐼', '🐯', '🐰', '🐶', '🐱', '🦊', '🐨', '🐸', '🦄', '🐲', '🐧', '🦁'];
-const DEFAULT_AVATAR = { YC: '🐯', JY: '🐼' };
-const LEVELS = [
-  { lv: 1, zh: '初級', en: 'Beginner', hint: 'Basic everyday words' },
-  { lv: 2, zh: '中級', en: 'Intermediate', hint: 'Adds school, places and harder words' },
-  { lv: 3, zh: '高級', en: 'Advanced', hint: 'All words' },
-];
+// The page shows no icon next to a name. The Firestore rules still require an `avatar` value in
+// the preferences, so the app keeps the saved value (or this default) and does not show it.
+const DEFAULT_AVATAR = '🐼';
 const WRONG_PIN = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-login-credentials'];
 
 const app = document.getElementById('app');
@@ -53,7 +50,7 @@ function withDefaults(code, data) {
     code,
     levelSet: data.level != null,
     level: data.level ?? 1,
-    prefs: { showPinyin: true, showEnglish: true, sessionSize: 10, speechRate: 0.8, avatar: DEFAULT_AVATAR[code] ?? '🐼', ...(data.prefs ?? {}) },
+    prefs: { showPinyin: true, showEnglish: true, sessionSize: 10, speechRate: 0.8, avatar: DEFAULT_AVATAR, ...(data.prefs ?? {}) },
     summary: {
       stars: 0, streak: { count: 0, last: null }, daily: { date: null, count: 0 }, ...(data.summary ?? {}),
     },
@@ -219,9 +216,8 @@ function signinMsg() {
 function renderSignin() {
   const acct = (a) => {
     const on = view.selected === a.code;
-    const icon = a.role === 'learner' ? (DEFAULT_AVATAR[a.code] ?? '🙂') : '🔑';
     return `<button type="button" class="acct ${a.role} ${on ? 'on' : ''}" role="radio" aria-checked="${on}" data-action="pick" data-code="${a.code}" ${view.busy ? 'disabled' : ''}>
-      <span class="avatar ${a.role === 'parent' ? 'sm' : ''}">${icon}</span><span class="pname">${a.code}</span></button>`;
+      <span class="pname">${a.code}</span></button>`;
   };
   const msg = signinMsg();
   const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', 'clear', '0', 'back'].map((k) => {
@@ -334,7 +330,7 @@ function renderHome() {
 
   return `
     <header class="top">
-      <span class="who"><span class="avatar sm">${esc(me.prefs.avatar)}</span>${esc(me.code)}</span>
+      <span class="who">${esc(me.code)}</span>
       <div class="stats">
         ${offline() ? '<span class="stat off" title="No internet. Progress is saved on this device and sent later.">⚠️ Offline</span>' : ''}
         <span class="stat" title="Day streak">🔥 ${srs.currentStreak(me.summary.streak, date)}</span>
@@ -493,7 +489,6 @@ function renderDone() {
 function renderSettings() {
   const p = me.prefs;
   const lvl = levelInfo(me.level);
-  const avatar = view.avatar ?? p.avatar;
   const voiceNote = !canSpeak()
     ? 'This browser cannot read words aloud.'
     : hasMandarinVoice() ? 'A Mandarin voice is available.' : 'No Mandarin voice found on this device. Add one in system settings (Chinese, Taiwan).';
@@ -504,11 +499,6 @@ function renderSettings() {
         <div class="field"><span>Level 程度</span>
           <p class="readonly">${lvl.zh} ${lvl.en} · ${allCards(me.level).length} words <small class="muted">— a parent sets the level</small></p>
         </div>
-        <fieldset class="field"><legend>Pick an animal</legend>
-          <div class="avatar-grid">
-            ${AVATARS.map((a) => `<button type="button" class="avatar-pick ${a === avatar ? 'on' : ''}" data-action="avatar" data-value="${a}" aria-pressed="${a === avatar}">${a}</button>`).join('')}
-          </div>
-        </fieldset>
         <label class="check"><input type="checkbox" name="showPinyin" ${p.showPinyin ? 'checked' : ''}> Show Pinyin on the answer (Zhuyin is always shown)</label>
         <label class="check"><input type="checkbox" name="showEnglish" ${p.showEnglish ? 'checked' : ''}> Show English meaning on the answer</label>
         <label class="field"><span>Cards per round</span>
@@ -556,14 +546,14 @@ function kidPanel(k) {
   return `
     <section class="panel kid" aria-labelledby="kid-${k.code}">
       <div class="kid-head">
-        <h2 id="kid-${k.code}"><span class="avatar sm">${esc(k.prefs.avatar)}</span> ${k.code}</h2>
+        <h2 id="kid-${k.code}">${k.code}</h2>
         <label class="level-pick">程度 Level
           <select data-action="set-level" data-code="${k.code}" aria-label="Level for ${k.code}">
             ${LEVELS.map((l) => `<option value="${l.lv}" ${k.level === l.lv ? 'selected' : ''}>${l.zh} ${l.en} (${allCards(l.lv).length})</option>`).join('')}
           </select>
         </label>
       </div>
-      ${k.levelSet ? '' : '<p class="note">Level not set yet. The app uses 初級 Beginner until you choose one.</p>'}
+      ${k.levelSet ? '' : `<p class="note">Level not set yet. The app uses ${LEVELS[0].zh} ${LEVELS[0].en} until you choose one.</p>`}
       <div class="kpis">
         <div><b>${mastered}</b><span>of ${cards.length} learned</span></div>
         <div><b>${started}</b><span>started</span></div>
@@ -590,7 +580,7 @@ function kidPanel(k) {
 function renderParent() {
   return `
     <header class="top">
-      <span class="who"><span class="avatar sm">🔑</span>家長 Parent · ${esc(session.player.code)}</span>
+      <span class="who">家長 Parent · ${esc(session.player.code)}</span>
       <button class="icon-btn" data-action="refresh" aria-label="Refresh">↻</button>
     </header>
     <main class="wrap">
@@ -658,14 +648,6 @@ app.addEventListener('click', (e) => {
     case 'key': pressKey(el.dataset.key); break;
     case 'home': go({ name: 'home' }); break;
     case 'settings': go({ name: 'settings' }); break;
-    case 'avatar': {
-      view.avatar = el.dataset.value;
-      const form = document.getElementById('settings-form');
-      const keep = form ? Object.fromEntries(new FormData(form)) : {};
-      render();
-      restoreForm(keep);
-      break;
-    }
     case 'study': startSession(el.dataset.deck); break;
     case 'flip': if (!view.flipped) { view.flipped = true; render(); } break;
     case 'speak': speak(view.queue[view.index].w, me.prefs.speechRate); break;
@@ -674,14 +656,6 @@ app.addEventListener('click', (e) => {
     case 'reset': resetKid(el.dataset.code); break;
   }
 });
-
-// Keep unsaved form choices when the avatar picker re-renders the settings form.
-function restoreForm(values) {
-  const form = document.getElementById('settings-form');
-  if (!form) return;
-  for (const name of ['showPinyin', 'showEnglish']) form.elements[name].checked = values[name] === 'on';
-  for (const name of ['sessionSize', 'speechRate']) if (values[name]) form.elements[name].value = values[name];
-}
 
 app.addEventListener('change', (e) => {
   if (e.target.dataset.action === 'set-level') setLevel(e.target.dataset.code, Number(e.target.value));
@@ -693,7 +667,6 @@ app.addEventListener('submit', (e) => {
   const form = new FormData(e.target);
   me.prefs = {
     ...me.prefs,
-    avatar: view.avatar ?? me.prefs.avatar,
     showPinyin: form.get('showPinyin') === 'on',
     showEnglish: form.get('showEnglish') === 'on',
     sessionSize: Number(form.get('sessionSize')),

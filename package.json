@@ -10,7 +10,7 @@
     "crosscheck": "node tools/crosscheck.mjs"
   },
   "devDependencies": {
-    "opencc-js": "^1.4.2",
-    "pinyin-pro": "^3.26.0"
+    "@leonsilicon/moedict-data": "0.202603.0",
+    "opencc-js": "^1.4.2"
   }
 }

@@ -27,6 +27,7 @@ No build step, no framework. Plain HTML, CSS and ES modules.
 - Firebase web SDK 13.0.0 from `https://www.gstatic.com/firebasejs/13.0.0/` (same as Kids Games and Reads).
 - Relative links only. Shared keys with Kids Games: `kg-lock`, `kg-lastPlayer`. New own keys start with `kc-`.
 - Pronunciation follows Taiwan (教育部) readings. Store pinyin with tone numbers; Zhuyin is generated.
+- A word's level is set by its characters (`js/data/levels.js`, Ministry of Education frequency list). `npm test` checks it.
 - Phone first: check at 390 px wide, tap targets at least 44 px.
 
 ## Tests (run before every commit)

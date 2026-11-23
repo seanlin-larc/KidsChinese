@@ -102,8 +102,6 @@ h2 { font-size: 1.1rem; }
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
 }
 .profile-btn.add { border-style: dashed; box-shadow: none; color: var(--muted); }
-.avatar { font-size: 3rem; line-height: 1; }
-.avatar.sm { font-size: 1.8rem; }
 .pname { font-weight: 700; font-size: 1.15rem; word-break: break-word; }
 .pmeta { color: var(--muted); font-size: .9rem; }
 
@@ -112,9 +110,6 @@ h2 { font-size: 1.1rem; }
 input[type=text], input:not([type]), select {
   border: 2px solid var(--line); background: var(--bg); border-radius: 12px; padding: 12px 14px; font-size: 1.1rem; width: 100%;
 }
-.avatar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-.avatar-pick { font-size: 1.8rem; aspect-ratio: 1; border-radius: 14px; border: 2px solid var(--line); background: var(--bg); padding: 0; }
-.avatar-pick.on { border-color: var(--accent); background: var(--panel); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
 .level-opt { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 2px solid var(--line); border-radius: 14px; margin-bottom: 8px; cursor: pointer; }
 .level-opt.on { border-color: var(--accent); }
 .level-opt input { margin-top: 4px; accent-color: var(--accent); }
