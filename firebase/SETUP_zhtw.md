@@ -45,7 +45,7 @@ Kids Games 的規則沒有改變。
 
 ## 2. 設定程度
 
-1. 開啟 https://seanlin-larc.github.io/KidsChinese/，用 **SL** 和 Kids Games 的 PIN 碼登入。
+1. 開啟 https://seanlin-larc.github.io/kidsChinese/，用 **SL** 和 Kids Games 的 PIN 碼登入。
 2. 家長頁會顯示 YC 和 JY。設定每個孩子的**程度**（Level）。
    程度有 學前 Starters、初階 Beginner、四年級 Grade 4 和 小學 Elementary（見 README 的「程度」）。
    小學 Elementary 需要規則更新（第 1 節）。
@@ -75,7 +75,7 @@ Kids Games 的規則沒有改變。
    5. 檢查：新文件和其他五份放在一起，每份都有一個 `code` 欄位。
 4. **發布規則更新**（第 1 節）。先由有 `kidsgames` 推送權限的對話套用 patch 並合併（見交接文件）。
    然後從 Kids Games 的 `main` 發布**完整的**檔案。
-5. **讓新的 KidsChinese 頁面上線：** 把 KidsChinese 分支合併到 `main`。GitHub Pages 大約一分鐘後更新。
+5. **讓新的 KidsChinese 頁面上線——已完成（2026-11-23）：** 分支已合併到 `main`。GitHub Pages 大約一分鐘後更新。
    （第 4、5 步的順序不拘。兩步都完成後，嬤才能使用網站。）
 6. **在手機或 iPad 上測試：**
    1. 開啟網站。點 **嬤**（在 SL 和 CJ 旁邊），輸入她的 PIN 碼。
@@ -85,8 +85,7 @@ Kids Games 的規則沒有改變。
 
 注意：
 
-- 嬤不在 Kids Games 的登入頁上。要加進去，請在 Kids Games repo 的 `shared/session.js` 加一行
-  （這是 Kids Games 的修改；尚未做）。
+- 嬤不在 Kids Games 的登入頁上，以後也不加（Sean 的決定，2026-11-23）。
 - 她的資料在 `chinese/AMA`。Firestore 會在她第一次作答時建立。SL 和 CJ 看不到她的進度，
   她也看不到他們的。
 - PIN 碼錯誤鎖定（10 次、30 分鐘）對嬤和其他人一樣有效。

@@ -50,7 +50,7 @@ AMA 沒有加入 `shared/session.js`，所以她不在 Kids Games 的登入頁�
 ## 步驟
 
 1. 在 `kidsgames` 的 checkout 中：`git checkout -b kidschinese-rules-update origin/main`。
-2. `git apply ../KidsChinese/docs/kidsgames-rules-update.patch`（這個 patch 以 `main` 的 `ccfd684` 為基準）。
+2. `git apply ../kidsChinese/docs/kidsgames-rules-update.patch`（這個 patch 以 `main` 的 `ccfd684` 為基準）。
 3. `cd firebase && npm install && npm test`。預期 19 個全部通過。
 4. 推送分支。只有在 Sean 要求時才合併到 `main`。
 5. 由 Sean 發布完整的檔案：見 KidsChinese 的 `firebase/SETUP_zhtw.md` 第 3 節。

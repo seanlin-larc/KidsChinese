@@ -46,7 +46,7 @@ Until it is published: level 4 cannot be set, SL and CJ see the parent page but 
 
 ## 2. Set the levels
 
-1. Open https://seanlin-larc.github.io/KidsChinese/ and sign in as **SL** with the Kids Games PIN.
+1. Open https://seanlin-larc.github.io/kidsChinese/ and sign in as **SL** with the Kids Games PIN.
 2. The parent page shows YC and JY. Set each child's **Level** (程度).
    The levels are 學前 Starters, 初階 Beginner, 四年級 Grade 4 and 小學 Elementary (see README, "Levels").
    小學 Elementary needs the rules update (section 1).
@@ -77,7 +77,7 @@ Until it is published: level 4 cannot be set, SL and CJ see the parent page but 
    5. Check: the new document sits next to the other five, and each has one field `code`.
 4. **Publish the rules update** (section 1). First a chat with push access to `kidsgames` applies the
    patch and merges it (see the handoff). Then publish the **complete** file from Kids Games `main`.
-5. **Put the new KidsChinese page online:** merge the KidsChinese branch to `main`. GitHub Pages updates
+5. **Put the new KidsChinese page online — done (2026-11-23):** the branch is merged to `main`. GitHub Pages updates
    in about a minute. (Steps 4 and 5 can be in either order. 嬤 can use the site only after both.)
 6. **Test** on a phone or iPad:
    1. Open the site. Tap **嬤** (next to SL and CJ), then type her PIN.
@@ -87,8 +87,7 @@ Until it is published: level 4 cannot be set, SL and CJ see the parent page but 
 
 Notes:
 
-- 嬤 is not on the Kids Games sign-in page. To add her there, add one line to `shared/session.js` in the
-  Kids Games repo (a Kids Games change; not done).
+- 嬤 is not on the Kids Games sign-in page, and she stays off it (Sean's decision, 2026-11-23).
 - Her data is `chinese/AMA`. Firestore makes it at her first answer. SL and CJ cannot see her progress,
   and she cannot see theirs.
 - The wrong-PIN lock (10 tries, 30 minutes) works for 嬤 the same as for the others.

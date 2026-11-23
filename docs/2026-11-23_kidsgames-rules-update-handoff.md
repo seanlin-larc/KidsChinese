@@ -50,7 +50,7 @@ AMA is not added to `shared/session.js`, so she is not on the Kids Games sign-in
 ## Steps
 
 1. In a `kidsgames` checkout: `git checkout -b kidschinese-rules-update origin/main`.
-2. `git apply ../KidsChinese/docs/kidsgames-rules-update.patch` (the patch is against `main` at `ccfd684`).
+2. `git apply ../kidsChinese/docs/kidsgames-rules-update.patch` (the patch is against `main` at `ccfd684`).
 3. `cd firebase && npm install && npm test`. Expect 19 of 19 to pass.
 4. Push the branch. Merge to `main` only when Sean asks.
 5. Sean publishes the complete file: see `firebase/SETUP.md` in KidsChinese, section 3.

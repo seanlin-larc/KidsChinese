@@ -107,7 +107,7 @@ python3 -m http.server 8000
 1. 在 GitHub 開啟 **Settings → Pages**。
 2. 把 **Source** 設為 *Deploy from a branch*。
 3. 選擇分支 `main` 和資料夾 `/ (root)`，然後按 **Save**。
-4. 大約一分鐘後，網站會在 `https://<your-user>.github.io/KidsChinese/`。
+4. 大約一分鐘後，網站會在 `https://<your-user>.github.io/kidsChinese/`。
 
 在 iPad 或手機上，用 **分享 → 加入主畫面** 取得 App 圖示。
 

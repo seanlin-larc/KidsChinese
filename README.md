@@ -117,7 +117,7 @@ Then open http://localhost:8000. Opening `index.html` directly from disk does no
 1. On GitHub, open **Settings → Pages**.
 2. Set **Source** to *Deploy from a branch*.
 3. Select branch `main` and folder `/ (root)`, then click **Save**.
-4. After about a minute, the site is at `https://<your-user>.github.io/KidsChinese/`.
+4. After about a minute, the site is at `https://<your-user>.github.io/kidsChinese/`.
 
 On an iPad or phone, use **Share → Add to Home Screen** to get an app icon.
 
