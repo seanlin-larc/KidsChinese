@@ -24,8 +24,7 @@ KidsChinese uses the Kids Games project (`kidsgame-7a262`), so the accounts, PIN
 One step is left: publish the Kids Games rules file that has the KidsChinese block, then set the levels.
 See [firebase/SETUP.md](firebase/SETUP.md). Until the rules are published, the site shows "Cannot read progress".
 
-Status (2026-11-23): Sean published the merged rules. The Kids Games repo does not have them yet: see
-[docs/2026-11-23_kidsgames-rules-handoff.md](docs/2026-11-23_kidsgames-rules-handoff.md).
+Status (2026-11-23): Sean published the merged rules. Kids Games `main` has the same file (commit `c7cd314`).
 
 ## Accounts and account control
 

@@ -1,5 +1,9 @@
 # Handoff: add the KidsChinese rules to the `kidsgames` repo
 
+**Done (2026-11-23).** Kids Games `main` has the patch (`c7cd314`); `firebase/firestore.rules` SHA-256 is
+`d5383d42…698d`. Commit `ccfd684` fixed the test config, so plain `npm test` works (18 of 18). The
+work-around in step 4 is no longer necessary.
+
 For: a new chat (Claude Code, Codex or another agent) that has **push access to `seanlin-larc/kidsgames`**.
 From: the KidsChinese session, 2026-11-23. That session could not push to `kidsgames`.
 
