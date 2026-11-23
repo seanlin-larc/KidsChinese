@@ -15,8 +15,10 @@ There is no new project, no new account and no new PIN.
 The rules for both sites are in **one file**: `firebase/firestore.rules` in the **Kids Games** repo.
 The KidsChinese part is the block "KidsChinese flash cards" near the end (collection `chinese`).
 
-1. Make sure the Kids Games file has that block (it is on the Kids Games branch
-   `claude/kidschinese-rules` until it is merged to `main`).
+1. Make sure the Kids Games file has that block. Status (2026-11-23): Sean published the merged file.
+   The Kids Games repo gets the same change from `docs/kidsgames-kidschinese-rules.patch`
+   (handoff: `docs/2026-11-23_kidsgames-rules-handoff.md`). Until that is merged, do not publish the
+   rules file from Kids Games `main`: it does not have the KidsChinese block.
 2. Open the [Firebase console for kidsgame-7a262](https://console.firebase.google.com/project/kidsgame-7a262/firestore) → **Firestore Database** → **Rules**.
 3. Keep a copy of the current rules.
 4. Replace all of the text with the **complete** Kids Games file. Click **Publish**.
