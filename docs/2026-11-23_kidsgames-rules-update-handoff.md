@@ -23,9 +23,9 @@ The KidsChinese app changed in three ways. The published rules refuse all three:
    (a test player). The rules allow progress for YC and JY only.
 3. **New parent 嬤 (grandma), code `AMA`,** account `ama@kidsgames.invalid`. She has the same access as SL and CJ.
 
-Before the new rules were published, SL and CJ see the parent page as before, but with no 練習 Study button
-and a note about this update. 嬤 sees "Cannot read progress". YC and JY are not affected.
-Level 4 also fails until then ("Could not set the level").
+Before the new rules were published, SL and CJ saw the parent page as before, but with no 練習 Study button
+and a note about this update. 嬤 saw "Cannot read progress". YC and JY were not affected.
+Level 4 also failed until then ("Could not set the level").
 
 ## What the patch changes (3 files)
 
