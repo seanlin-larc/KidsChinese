@@ -1,5 +1,7 @@
 # 學中文 Flash Cards (KidsChinese)
 
+繁體中文版：[README_zhtw.md](README_zhtw.md)
+
 Flash cards for kids who learn Mandarin at Saturday school.
 The card shows a word in **Traditional characters** (2–3 characters).
 The child reads it, then flips the card to check the answer in **Zhuyin (注音)** and **Pinyin**.
