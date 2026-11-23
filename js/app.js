@@ -3,6 +3,7 @@ import { LEVELS } from './data/levels.js';
 import { syllables, toZhuyinParts, toToneMarked } from './pinyin.js';
 import * as srs from './srs.js';
 import { speak, canSpeak, hasMandarinVoice } from './speech.js';
+import { hintText } from './hint.js';
 import { ACCOUNTS, LEARNERS, accountForCode, nameOf } from './accounts.js';
 import * as L from './lock.js';
 import { access, loadAuth, withTimeout } from './load.js';
@@ -403,7 +404,7 @@ function startSession(deckKey) {
   const picked = srs.pickSession(pool, me.cards, date, me.prefs.sessionSize);
   go({
     name: 'study', deckKey, title, extra: picked.extra,
-    queue: shuffle(picked.cards), index: 0, flipped: false,
+    queue: shuffle(picked.cards), index: 0, flipped: false, hinted: false,
     retried: new Set(), firstTry: new Map(), starsEarned: 0,
   });
   if (picked.extra) toast('All caught up! Extra practice — this will not change your schedule.');
@@ -425,7 +426,9 @@ function renderStudy() {
         <button class="card ${view.flipped ? 'flipped' : ''}" data-action="flip" aria-label="${view.flipped ? 'Answer shown' : 'Tap to see the answer'}">
           <div class="face front">
             <div class="hz-front ${card.w.length === 3 ? 'three' : ''}">${card.w}</div>
-            <div class="hint">讀讀看 · Read it, then tap</div>
+            ${view.hinted
+              ? `<div class="en-hint">💡 ${esc(hintText(card.en))}</div>`
+              : '<div class="hint">讀讀看 · Read it, then tap</div>'}
           </div>
           <div class="face back">${view.flipped ? answerHtml(card, me.prefs) : ''}</div>
         </button>
@@ -437,6 +440,7 @@ function renderStudy() {
             <button class="btn miss big" data-action="grade" data-got="0">再練習<small>Not yet</small></button>
             <button class="btn hit big" data-action="grade" data-got="1">我會了<small>Got it!</small></button>
           </div>` : `
+          <button class="btn ghost hint-btn" data-action="hint" ${view.hinted ? 'disabled' : ''}>💡 提示 Hint</button>
           <button class="btn primary big" data-action="flip">翻牌 Flip</button>`}
       </div>
     </main>`;
@@ -474,8 +478,16 @@ function grade(gotIt) {
   } else {
     view.index += 1;
     view.flipped = false;
+    view.hinted = false;
     render();
   }
+}
+
+// The hint shows a short English word on the front. It does not change the score.
+function showHint() {
+  if (view.flipped || view.hinted) return;
+  view.hinted = true;
+  render();
 }
 
 function renderDone() {
@@ -681,6 +693,7 @@ app.addEventListener('click', (e) => {
     case 'parent': openParent(); break;
     case 'study': startSession(el.dataset.deck); break;
     case 'flip': if (!view.flipped) { view.flipped = true; render(); } break;
+    case 'hint': showHint(); break;
     case 'speak': speak(view.queue[view.index].w, me.prefs.speechRate); break;
     case 'grade': grade(el.dataset.got === '1'); break;
     case 'refresh': loadKids().then(render, () => toast('Could not refresh. Check the internet.')); break;
@@ -724,6 +737,7 @@ document.addEventListener('keydown', (e) => {
   }
   if (view.name !== 'study') return;
   if (!view.flipped && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); view.flipped = true; render(); return; }
+  if (!view.flipped && e.key.toLowerCase() === 'h') { showHint(); return; }
   if (view.flipped) {
     if (e.key === 'ArrowRight' || e.key === '2') grade(true);
     else if (e.key === 'ArrowLeft' || e.key === '1') grade(false);

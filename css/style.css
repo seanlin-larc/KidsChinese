@@ -155,6 +155,7 @@ input[type=text], input:not([type]), select {
 .hz-front { font-family: var(--kai); font-size: clamp(4.5rem, 22vw, 8.5rem); line-height: 1.1; letter-spacing: .08em; }
 .hz-front.three { font-size: clamp(3.6rem, 17vw, 7rem); }
 .hint { position: absolute; bottom: 14px; color: var(--muted); font-size: .9rem; }
+.en-hint { position: absolute; bottom: 12px; max-width: calc(100% - 32px); font-size: 1.15rem; font-weight: 600; color: var(--ink); background: var(--bg); border-radius: 999px; padding: 4px 14px; }
 
 /* answer: each character with vertical Zhuyin on its right (Taiwan textbook style) */
 .answer { display: flex; gap: clamp(6px, 3vw, 22px); justify-content: center; align-items: flex-end; }
@@ -175,6 +176,7 @@ input[type=text], input:not([type]), select {
 
 .controls { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; max-width: 560px; }
 .controls > .btn.primary { width: 100%; }
+.controls > .hint-btn { width: 100%; min-height: 48px; }
 .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
 
 /* ---------- done ---------- */
