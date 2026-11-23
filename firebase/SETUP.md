@@ -1,96 +1,59 @@
 # Firebase setup for KidsChinese
 
-KidsChinese has its own Firebase project, separate from Kids Games and Reads.
-A sign-in on one site does not affect the other sites.
-Do these steps one time. They take about 20 minutes.
+KidsChinese uses the **Kids Games** Firebase project (`kidsgame-7a262`) and its accounts.
+There is no new project, no new account and no new PIN.
 
-Until step 3 is done, the site shows "Not set up yet".
+| Already done (Kids Games) | Still to do |
+|---|---|
+| Accounts YC, JY, SL, CJ, Guest (`<code>@kidsgames.invalid`), PIN = password | Publish the rules with the KidsChinese block (below) |
+| `players/{uid}` documents with the codes | Sign in as SL and set each child's level |
+| API key restriction: `https://seanlin-larc.github.io/*`, `http://localhost:8000/*` | |
+| `admin/reset-pin.mjs` in the Kids Games repo | |
 
-```mermaid
-flowchart LR
-    A[1. Create project] --> B[2. Accounts + PINs] --> C[3. Web app config<br>send to Claude]
-    C --> D[4. Firestore + rules] --> E[5. API key restriction] --> F[6. Test + set levels]
-```
+## 1. Publish the rules (one time, and after each rules change)
 
-## 1. Create the project
+The rules for both sites are in **one file**: `firebase/firestore.rules` in the **Kids Games** repo.
+The KidsChinese part is the block "KidsChinese flash cards" near the end (collection `chinese`).
 
-1. Open https://console.firebase.google.com and click **Create a project**.
-2. Name: `kidschinese` (Firebase adds a suffix to the project ID, for example `kidschinese-1a2b3`).
-3. Google Analytics: **off**. It is not necessary.
+1. Make sure the Kids Games file has that block (it is on the Kids Games branch
+   `claude/kidschinese-rules` until it is merged to `main`).
+2. Open the [Firebase console for kidsgame-7a262](https://console.firebase.google.com/project/kidsgame-7a262/firestore) → **Firestore Database** → **Rules**.
+3. Keep a copy of the current rules.
+4. Replace all of the text with the **complete** Kids Games file. Click **Publish**.
 
-## 2. Make the four accounts
+Do not publish only the KidsChinese block: that removes the Kids Games rules.
 
-1. Select **Build → Authentication → Get started**.
-2. In **Sign-in method**, turn on **Email/Password**. Leave "Email link" off.
-3. In **Users**, click **Add user** four times:
+What the KidsChinese block allows (the role comes from `players/{uid}.code`):
 
-   | Email | Who | Role |
-   |---|---|---|
-   | `yc@kidschinese.invalid` | YC | learner |
-   | `jy@kidschinese.invalid` | JY | learner |
-   | `sl@kidschinese.invalid` | SL | parent |
-   | `cj@kidschinese.invalid` | CJ | parent |
+| | YC / JY (learner) | SL / CJ (parent) | Guest, others |
+|---|---|---|---|
+| Read own progress | ✓ | — | ✗ |
+| Read the other learner's progress | ✗ | ✓ (both) | ✗ |
+| Save answers, stars, streak | own only | ✗ | ✗ |
+| Change display settings (Pinyin, English, animal) | own only | ✓ | ✗ |
+| Set a learner's level | ✗ | ✓ | ✗ |
+| Reset a learner's progress | ✗ | ✓ | ✗ |
 
-   The password is that person's **6-digit PIN**. Do not write the PINs in this repo or in a chat.
-4. In **Settings → User actions**, turn off **Enable create (sign-up)** and **Enable delete**.
-   Then nobody can add or delete an account from the browser.
+The Kids Games rules are not changed.
 
-The emails end in `.invalid` on purpose: no email is ever sent. To change a PIN later, use
-`admin/reset-pin.mjs` (see [admin/README.md](../admin/README.md)).
+## 2. Set the levels
 
-## 3. Register the web app and send the config
-
-1. Select **Project settings** (⚙) → **General** → **Your apps** → the web icon `</>`.
-2. Nickname: `kidschinese-web`. Do not turn on Firebase Hosting (GitHub Pages hosts the site).
-3. Copy the `firebaseConfig` object (apiKey, authDomain, projectId, …).
-4. Send it to Claude, or paste it into `js/firebase/config.js` in place of `null`.
-
-This config is not a secret. It only names the project. The Firestore rules control access.
-
-## 4. Create Firestore and publish the rules
-
-1. Select **Build → Firestore Database → Create database**.
-2. Database ID `(default)`. Location: `us-west1` (Oregon), the same as Reads. You cannot change it later.
-3. Start in **production mode**.
-4. Open the **Rules** tab. Replace all of the text with the whole file
-   [`firebase/firestore.rules`](firestore.rules). Click **Publish**.
-
-What the rules allow:
-
-| | YC / JY (learner) | SL / CJ (parent) |
-|---|---|---|
-| Read own progress | ✓ | — |
-| Read the other learner's progress | ✗ | ✓ (both) |
-| Save answers, stars, streak | own only | ✗ |
-| Change own settings (Pinyin, English, animal) | ✓ | ✓ (for a learner) |
-| Set a learner's level | ✗ | ✓ |
-| Reset a learner's progress | ✗ | ✓ |
-
-Every other read or write is refused, also for any other account.
-
-## 5. Restrict the API key to the site
-
-1. Open https://console.cloud.google.com, select the `kidschinese` project.
-2. Select **APIs & Services → Credentials → Browser key (auto created by Firebase)**.
-3. In **Application restrictions**, select **Websites**. Add:
-   - `https://seanlin-larc.github.io/*`
-   - `http://localhost:8000/*`
-4. Click **Save**. It can take a few minutes to apply.
-
-This is the same restriction as Kids Games and Reads.
-
-## 6. Test and set the levels
-
-1. Open https://seanlin-larc.github.io/KidsChinese/ and sign in as **SL**.
+1. Open https://seanlin-larc.github.io/KidsChinese/ and sign in as **SL** with the Kids Games PIN.
 2. The parent page shows YC and JY. Set each child's **Level** (程度).
    Suggested: JY 初級 Beginner, YC 中級 Intermediate.
 3. Sign out. Sign in as **YC**, do one round, and check that the stars stay after a reload.
-4. Sign in as **SL** again. YC's card now shows the round.
 
-## Notes
+## Shared sign-in: what to know
 
-- **Offline:** after the first sign-in on a device, the app works without internet. Answers are
-  kept on the device and sent when the device is online again.
-- **Progress from before accounts** (saved only in the browser) is not moved to Firebase.
-- **Costs:** two kids use far less than the Firestore free tier (50,000 reads and 20,000 writes
-  each day). See https://firebase.google.com/pricing.
+- **One sign-in for both sites on a device.** A child who signs in to Kids Games is also signed in to
+  KidsChinese, and the other way round. **Sign-out on one site also signs out of the other.**
+- **Guest:** when Guest is signed in from Kids Games, KidsChinese shows "Not for this account" with a
+  Sign out button. It does not sign Guest out by itself.
+- **Wrong-PIN lock** (`kg-lock`) is shared: wrong PINs on either site count together.
+- **Forgotten PIN:** use `admin/reset-pin.mjs` in the Kids Games repo. The new PIN works on both sites.
+- **Remove an account's access:** delete its `players/{uid}` document in the console. Then the account
+  can use neither site.
+- **Offline:** after the first sign-in on a device, KidsChinese works without internet. Answers are kept
+  on the device and sent later. (Kids Games uses its own 48-hour check-out for offline play.)
+- **Costs:** both sites share the Firestore free tier (50,000 reads and 20,000 writes each day).
+  Two kids use a small part of it. See https://firebase.google.com/pricing.

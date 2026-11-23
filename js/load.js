@@ -32,7 +32,10 @@ export function lastLoadError() {
 // Finds out who is signed in. Returns { mode, auth, player, error }:
 //   mode "online"         a family account is signed in (Firebase restored the sign-in;
 //                          this also works without internet after the first sign-in)
-//   mode "signed-out"     nobody is signed in (or the account is not a family account)
+//   mode "signed-out"     nobody is signed in
+//   mode "not-allowed"    a Kids Games account that cannot use KidsChinese (Guest) is signed in;
+//                          error.who has its name. It is not signed out automatically, because
+//                          the sign-in is shared with the Kids Games site.
 //   mode "not-configured" config.js has no Firebase project yet
 //   mode "offline"        Firebase did not load or did not answer
 export async function access() {
@@ -46,10 +49,7 @@ export async function access() {
     if (!player) return { mode: 'signed-out', auth };
     return { mode: 'online', auth, player };
   } catch (e) {
-    if (e && e.message === 'not-family') {
-      await auth.signOutPlayer().catch(() => {});
-      return { mode: 'signed-out', auth, error: e };
-    }
+    if (e && e.message === 'not-family') return { mode: 'not-allowed', auth, error: e };
     return { mode: 'offline', auth, error: e };
   }
 }

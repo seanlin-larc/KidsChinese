@@ -2,11 +2,12 @@
 // Pages do not import this file directly. They use ../load.js, which loads this file with a
 // time limit and reports when Firebase cannot load.
 //
-// Firestore data (rules: firebase/firestore.rules):
-//   learners/{code}                 { level, updatedAt, updatedBy }        parents write
-//   learners/{code}/data/summary    { stars, streak, daily, updatedAt }    the learner writes
-//   learners/{code}/data/prefs      { showPinyin, showEnglish, sessionSize, speechRate, avatar, updatedAt }
-//   learners/{code}/cards/{cardId}  { box, due, seen, right, updatedAt }   the learner writes
+// Firebase project: Kids Games (kidsgame-7a262), shared with the Kids Games site.
+// Firestore data (rules: KidsChinese block in kidsgames/firebase/firestore.rules):
+//   chinese/{code}                 { level, updatedAt, updatedBy }        parents write
+//   chinese/{code}/data/summary    { stars, streak, daily, updatedAt }    the learner writes
+//   chinese/{code}/data/prefs      { showPinyin, showEnglish, sessionSize, speechRate, avatar, updatedAt }
+//   chinese/{code}/cards/{cardId}  { box, due, seen, right, updatedAt }   the learner writes
 // A parent resets progress by deleting the cards and the summary.
 //
 // Offline: Firestore keeps a copy on the device. Reads use the copy when there is no
@@ -20,7 +21,7 @@ import { accountForEmail, accountForCode, LEARNERS } from '../accounts.js';
 
 const EMULATOR = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   && new URLSearchParams(location.search).has('emulator');
-const config = EMULATOR ? { apiKey: 'demo-key', projectId: 'demo-kidschinese', authDomain: 'localhost' } : FIREBASE_CONFIG;
+const config = EMULATOR ? { apiKey: 'demo-key', projectId: 'demo-kidsgames', authDomain: 'localhost' } : FIREBASE_CONFIG;
 
 if (!config) throw Object.assign(new Error('Firebase is not set up yet.'), { code: 'app/not-configured' });
 
@@ -54,13 +55,17 @@ const authReady = new Promise((resolve) => {
 /* ---------- sign-in ---------- */
 
 // Returns { uid, code, role } for the signed-in person, or null if nobody is signed in.
-// Throws "not-family" if the account is not one of the family accounts.
+// Throws "not-family" (error.who = the account name, for example "Guest") if the account is
+// not a KidsChinese account. Do not sign it out here: the sign-in is shared with Kids Games.
 export async function currentPlayer() {
   await authReady;
   const user = auth.currentUser;
   if (!user) return null;
   const acc = accountForEmail(user.email);
-  if (!acc) throw new Error('not-family');
+  if (!acc) {
+    const name = String(user.email || '').split('@')[0];
+    throw Object.assign(new Error('not-family'), { who: name.charAt(0).toUpperCase() + name.slice(1) });
+  }
   return { uid: user.uid, code: acc.code, role: acc.role };
 }
 
@@ -80,11 +85,12 @@ export async function signOutPlayer() {
 
 /* ---------- progress data ---------- */
 
-const learnerRef = (code) => F.doc(db, 'learners', code);
-const summaryRef = (code) => F.doc(db, 'learners', code, 'data', 'summary');
-const prefsRef = (code) => F.doc(db, 'learners', code, 'data', 'prefs');
-const cardsRef = (code) => F.collection(db, 'learners', code, 'cards');
-const cardRef = (code, id) => F.doc(db, 'learners', code, 'cards', id);
+const COL = 'chinese';   // the KidsChinese collection in the shared Kids Games database
+const learnerRef = (code) => F.doc(db, COL, code);
+const summaryRef = (code) => F.doc(db, COL, code, 'data', 'summary');
+const prefsRef = (code) => F.doc(db, COL, code, 'data', 'prefs');
+const cardsRef = (code) => F.collection(db, COL, code, 'cards');
+const cardRef = (code, id) => F.doc(db, COL, code, 'cards', id);
 
 function checkLearner(code) {
   if (!LEARNERS.includes(code)) throw Object.assign(new Error('Not a learner: ' + code), { code: 'app/not-learner' });

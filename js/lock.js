@@ -1,7 +1,9 @@
 // Wrong-PIN lock (same as Kids Games and Reads). This file has no Firebase code.
 //
 // 10 wrong PINs in a row lock that account for 30 minutes, on this device only.
-// localStorage key "kc-lock": { CODE: { fails } } or { CODE: { fails: 0, at, until } } when locked.
+// localStorage key "kg-lock", SHARED with the Kids Games site (same accounts, same site, same
+// format): { CODE: { fails } } or { CODE: { fails: 0, at, until } } when locked. So wrong PINs on
+// either site count together, and a lock covers both sites.
 // A user who clears the site data or uses another browser removes it.
 // It stops mistakes and casual tries; it is not a hard guard. Firebase checks the PIN
 // and also slows down many wrong tries on its server.
@@ -9,7 +11,7 @@
 export const LOCK_FAILS = 10;     // wrong PINs in a row before a lock
 export const LOCK_MINUTES = 30;   // length of the lock
 
-const KEY = 'kc-lock';
+const KEY = 'kg-lock';
 
 function read() {
   try { const v = JSON.parse(localStorage.getItem(KEY)); return v && typeof v === 'object' ? v : {}; }

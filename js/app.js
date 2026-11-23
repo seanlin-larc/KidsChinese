@@ -10,7 +10,7 @@ window.kcStarted = true;   // the page script started (see js/stuck.js)
 const DAILY_GOAL = 10;
 const PERFECT_BONUS = 3;
 const PIN_LENGTH = 6;
-const LAST_KEY = 'kc-lastAccount';   // the last account picked on this device
+const LAST_KEY = 'kg-lastPlayer';    // the last account picked on this device (shared with Kids Games)
 const AVATARS = ['🐼', '🐯', '🐰', '🐶', '🐱', '🦊', '🐨', '🐸', '🦄', '🐲', '🐧', '🦁'];
 const DEFAULT_AVATAR = { YC: '🐯', JY: '🐼' };
 const LEVELS = [
@@ -102,6 +102,10 @@ async function boot() {
   if (st.mode === 'not-configured') return go({ name: 'problem', kind: 'setup' });
   if (st.mode === 'offline') return go({ name: 'problem', kind: 'offline' });
   if (st.mode === 'signed-out') return go({ name: 'signin', selected: lastAccount(), pin: '' });
+  if (st.mode === 'not-allowed') {
+    session = { auth: st.auth, player: { code: st.error.who || 'This account', role: 'none' } };
+    return go({ name: 'problem', kind: 'not-allowed' });
+  }
   session = { auth: st.auth, player: st.player };
   try {
     if (st.player.role === 'learner') {
@@ -173,10 +177,11 @@ function renderLoading() {
 
 function renderProblem() {
   const text = {
-    setup: ['還沒設定 Not set up yet', 'KidsChinese is not connected to its Firebase project yet. A parent must finish the steps in firebase/SETUP.md.'],
+    setup: ['還沒設定 Not set up yet', 'KidsChinese is not connected to Firebase. A parent must check js/firebase/config.js.'],
     offline: ['沒有網路 No internet', 'The first sign-in on this device needs internet. Connect to Wi-Fi, then try again.'],
-    rules: ['不能讀取 Cannot read progress', 'Firebase refused to read the progress. A parent must publish firebase/firestore.rules in the Firebase console (see firebase/SETUP.md).'],
+    rules: ['不能讀取 Cannot read progress', 'Firebase refused to read the progress. A parent must publish the Kids Games rules with the KidsChinese block (see firebase/SETUP.md).'],
     load: ['不能讀取 Cannot read progress', 'The progress did not load. Check the internet, then try again.'],
+    'not-allowed': ['這個帳號不能用 Not for this account', `${session ? session.player.code : 'This account'} is signed in from Kids Games. ${session ? session.player.code : 'This account'} cannot use KidsChinese. Sign out, then sign in as YC, JY, SL or CJ. Sign-out also signs out of Kids Games on this device.`],
   }[view.kind];
   return `
     <header class="top center"><h1 class="logo">學中文 <span>Flash Cards</span></h1></header>
@@ -185,8 +190,10 @@ function renderProblem() {
         <h2>${text[0]}</h2>
         <p class="problem" role="alert">${text[1]}</p>
         <div class="row wrap-row center-row">
-          <button class="btn primary" data-action="retry">再試一次 Try again</button>
-          ${session ? '<button class="btn ghost" data-action="signout">Sign out</button>' : ''}
+          ${view.kind === 'not-allowed'
+            ? '<button class="btn primary" data-action="signout">Sign out</button>'
+            : `<button class="btn primary" data-action="retry">再試一次 Try again</button>
+               ${session ? '<button class="btn ghost" data-action="signout">Sign out</button>' : ''}`}
         </div>
       </div>
     </main>`;
@@ -275,7 +282,6 @@ async function submitPin() {
       text = st.locked ? lockText(code)
         : `Wrong PIN. ${st.left} ${st.left === 1 ? 'try' : 'tries'} left before a ${L.LOCK_MINUTES}-minute lock.`;
     }
-    if (e && e.message === 'not-family' && auth) await auth.signOutPlayer().catch(() => {});
     Object.assign(view, { pin: '', busy: false, shake: true, msg: { text, bad: true } });
     render();
   }
@@ -516,7 +522,8 @@ function renderSettings() {
       </form>
       <section class="panel">
         <h2>Account</h2>
-        <p class="muted">Signed in as <b>${esc(me.code)}</b>. Sign out before someone else plays on this device.</p>
+        <p class="muted">Signed in as <b>${esc(me.code)}</b>. Sign out before someone else plays on this device.
+          Kids Games and KidsChinese share the sign-in: a sign-out here also signs out of Kids Games.</p>
         <button class="btn ghost" data-action="signout">Sign out</button>
       </section>
     </main>`;
