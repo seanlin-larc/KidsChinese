@@ -1,0 +1,14 @@
+{
+  "name": "kidschinese-admin",
+  "private": true,
+  "description": "Admin tools for KidsChinese. Run on a parent computer only, never in the website.",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "reset-pin": "node reset-pin.mjs",
+    "list": "node reset-pin.mjs --list"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  }
+}

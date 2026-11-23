@@ -206,3 +206,64 @@ input[type=text], input:not([type]), select {
   .btn.big { padding: 12px 14px; }
   .stat { padding: 4px 8px; }
 }
+
+/* ---------- loading and problems ---------- */
+.loading { margin-top: 30vh; color: var(--muted); font-size: 1.1rem; }
+.problem { color: var(--accent); font-weight: 600; }
+.center-row { justify-content: center; }
+.note { background: color-mix(in srgb, var(--miss) 14%, var(--panel)); border-radius: 12px; padding: 8px 12px; font-size: .95rem; }
+
+/* ---------- sign-in ---------- */
+.signin h2 { margin-bottom: 14px; }
+.accts { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.accts.parents { align-items: center; gap: 10px; }
+.acct {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 110px; padding: 14px 18px;
+  background: var(--bg); border: 2px solid var(--line); border-radius: var(--radius);
+}
+.acct.parent { flex-direction: row; min-width: 0; padding: 8px 16px; min-height: 48px; }
+.acct.on { border-color: var(--accent); background: var(--panel); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.dots { display: flex; gap: 12px; justify-content: center; margin: 18px 0 8px; }
+.dots span { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); }
+.dots span.on { background: var(--ink); border-color: var(--ink); }
+.dots.shake { animation: shake .35s; }
+@keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.msg { text-align: center; min-height: 1.5em; margin: 6px 0 14px; }
+.msg.bad { color: var(--accent); font-weight: 600; }
+.pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 320px; margin: 0 auto; }
+.key { min-height: 60px; font-size: 1.5rem; font-weight: 700; border-radius: 16px; border: 1px solid var(--line); background: var(--bg); }
+.key.small { font-size: 1rem; }
+.key:active { transform: translateY(2px); }
+.key:disabled, .acct:disabled { opacity: .5; }
+
+/* ---------- signed-in bar ---------- */
+.signed-in {
+  display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+  max-width: 960px; margin: 8px auto 0; padding: 12px 16px max(16px, env(safe-area-inset-bottom)); color: var(--muted);
+}
+.signed-in .off { color: var(--miss); font-weight: 700; }
+.stat.off { background: var(--miss); color: #fff; border-color: var(--miss); }
+.btn.slim { min-height: 44px; padding: 8px 14px; }
+.readonly { margin: 0; padding: 10px 14px; background: var(--bg); border-radius: 12px; }
+.readonly small { display: block; }
+
+/* ---------- parent page ---------- */
+.kids { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.kid-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.kid-head h2 { display: flex; align-items: center; gap: 8px; font-size: 1.5rem; }
+.level-pick { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .9rem; }
+.level-pick select { min-height: 44px; padding: 8px 12px; font-size: 1rem; }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+.kpis div { background: var(--bg); border-radius: 12px; padding: 10px; text-align: center; display: flex; flex-direction: column; }
+.kpis b { font-size: 1.3rem; }
+.kpis span { color: var(--muted); font-size: .8rem; }
+details { margin: 10px 0; }
+summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+table.decks { width: 100%; border-collapse: collapse; }
+table.decks td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
+table.decks .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+table.decks .bar-cell { width: 30%; }
+table.decks .bar { margin: 0; height: 8px; }
+.hard { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.hard li { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.hz-sm { font-family: var(--kai); font-size: 1.5rem; }

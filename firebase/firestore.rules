@@ -1,0 +1,125 @@
+rules_version = '2';
+
+// Firestore rules for KidsChinese (its own Firebase project, not Kids Games or Reads).
+// Claude writes and tests these rules (firebase/tests). Sean publishes them in the
+// Firebase console: Firestore Database → Rules → paste this whole file → Publish.
+//
+// Accounts (Firebase Email/Password, the PIN is the password):
+//   learners: yc@kidschinese.invalid (YC), jy@kidschinese.invalid (JY)
+//   parents:  sl@kidschinese.invalid (SL), cj@kidschinese.invalid (CJ)
+//
+// Data:
+//   learners/{code}                 { level, updatedAt, updatedBy }
+//   learners/{code}/data/summary    { stars, streak, daily, updatedAt }
+//   learners/{code}/data/prefs      { showPinyin, showEnglish, sessionSize, speechRate, avatar, updatedAt }
+//   learners/{code}/cards/{cardId}  { box, due, seen, right, updatedAt }
+//
+// Who can do what:
+// - A learner reads and writes only their own progress and preferences.
+//   A learner cannot read the other learner's data, and cannot change their own level.
+// - A parent reads every learner's data, sets each learner's level, changes preferences,
+//   and resets progress (deletes cards and the summary). A parent does not write card answers.
+// - Everything that is not allowed here is refused.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function email() {
+      return request.auth != null ? request.auth.token.email : '';
+    }
+    function isParent() {
+      return email() in ['sl@kidschinese.invalid', 'cj@kidschinese.invalid'];
+    }
+    function parentCode() {
+      return email() == 'sl@kidschinese.invalid' ? 'SL' : 'CJ';
+    }
+    function isLearnerCode(code) {
+      return code in ['YC', 'JY'];
+    }
+    // The signed-in account is this learner.
+    function isSelf(code) {
+      return (code == 'YC' && email() == 'yc@kidschinese.invalid')
+          || (code == 'JY' && email() == 'jy@kidschinese.invalid');
+    }
+    function canRead(code) {
+      return isLearnerCode(code) && (isParent() || isSelf(code));
+    }
+
+    function isDate(d) {
+      return d is string && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+    function isDateOrNull(d) {
+      return d == null || isDate(d);
+    }
+    function isCount(n, max) {
+      return n is int && n >= 0 && n <= max;
+    }
+
+    function levelOk(d) {
+      return d.keys().hasOnly(['level', 'updatedAt', 'updatedBy'])
+        && d.keys().hasAll(['level', 'updatedAt', 'updatedBy'])
+        && d.level in [1, 2, 3]
+        && d.updatedAt == request.time
+        && d.updatedBy == parentCode();
+    }
+
+    function cardOk(d) {
+      return d.keys().hasOnly(['box', 'due', 'seen', 'right', 'updatedAt'])
+        && d.keys().hasAll(['box', 'due', 'seen', 'right', 'updatedAt'])
+        && isCount(d.box, 5)
+        && isDateOrNull(d.due)
+        && isCount(d.seen, 100000)
+        && isCount(d.right, 100000)
+        && d.right <= d.seen
+        && d.updatedAt == request.time;
+    }
+
+    function summaryOk(d) {
+      return d.keys().hasOnly(['stars', 'streak', 'daily', 'updatedAt'])
+        && d.keys().hasAll(['stars', 'streak', 'daily', 'updatedAt'])
+        && isCount(d.stars, 10000000)
+        && d.streak is map && d.streak.keys().hasOnly(['count', 'last']) && d.streak.keys().hasAll(['count', 'last'])
+        && isCount(d.streak.count, 100000) && isDateOrNull(d.streak.last)
+        && d.daily is map && d.daily.keys().hasOnly(['date', 'count']) && d.daily.keys().hasAll(['date', 'count'])
+        && isCount(d.daily.count, 100000) && isDateOrNull(d.daily.date)
+        && d.updatedAt == request.time;
+    }
+
+    function prefsOk(d) {
+      return d.keys().hasOnly(['showPinyin', 'showEnglish', 'sessionSize', 'speechRate', 'avatar', 'updatedAt'])
+        && d.keys().hasAll(['showPinyin', 'showEnglish', 'sessionSize', 'speechRate', 'avatar', 'updatedAt'])
+        && d.showPinyin is bool
+        && d.showEnglish is bool
+        && d.sessionSize in [5, 10, 15, 20]
+        && d.speechRate is number && d.speechRate >= 0.5 && d.speechRate <= 1.5
+        && d.avatar is string && d.avatar.size() <= 16
+        && d.updatedAt == request.time;
+    }
+
+    match /learners/{code} {
+      // The level: only a parent sets it.
+      allow read: if canRead(code);
+      allow create, update: if isLearnerCode(code) && isParent() && levelOk(request.resource.data);
+      allow delete: if false;
+
+      match /cards/{cardId} {
+        allow read: if canRead(code);
+        allow create, update: if isSelf(code) && cardId.size() <= 64 && cardOk(request.resource.data);
+        allow delete: if isLearnerCode(code) && isParent();
+      }
+
+      match /data/summary {
+        allow read: if canRead(code);
+        allow create, update: if isSelf(code) && summaryOk(request.resource.data);
+        allow delete: if isLearnerCode(code) && isParent();
+      }
+
+      match /data/prefs {
+        allow read: if canRead(code);
+        allow create, update: if (isSelf(code) || (isLearnerCode(code) && isParent()))
+          && prefsOk(request.resource.data);
+        allow delete: if false;
+      }
+    }
+  }
+}
