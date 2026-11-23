@@ -46,7 +46,7 @@
 
 第 3、4 級還需要更多詞。新增方法見[新增或修改詞語](#新增或修改詞語)。
 
-**第 4 級需要修改規則。** 目前已發布的 Kids Games 規則只接受第 1–3 級。在 [docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md](docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md) 的修改發布之前，家長不能選 小學 Elementary（頁面會顯示「Could not set the level」）。
+**第 4 級需要 Kids Games 規則更新。** 狀態（2026-11-23）：已完成。Sean 已發布接受第 1–4 級的規則（Kids Games 的 `main`，commit `b91fa7b`）。見 [docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md](docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md)。
 
 Firestore 裡的程度數字不變，但名稱在 2026-11-23 改了：
 1 初級 → 學前，2 中級 → 初階，3 高級 → 四年級。原本是第 2 級的孩子，現在是 初階 Beginner（1000 字）。
@@ -57,7 +57,7 @@ KidsChinese 使用 Kids Games 專案（`kidsgame-7a262`），所以帳號、PIN 
 只剩一步：發布含有 KidsChinese 區塊的 Kids Games 規則檔，然後設定程度。
 見 [firebase/SETUP_zhtw.md](firebase/SETUP_zhtw.md)。規則發布之前，網站會顯示「Cannot read progress」。
 
-狀態（2026-11-23）：Sean 已發布合併後的規則。Kids Games 的 `main` 有相同的檔案（commit `c7cd314`）。
+狀態（2026-11-23）：Sean 已發布規則更新。Kids Games 的 `main` 有相同的檔案（commit `b91fa7b`）。
 
 ## 帳號和帳號管理
 

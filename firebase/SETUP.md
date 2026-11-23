@@ -7,9 +7,10 @@ There is no new project, no new account and no new PIN.
 
 | Already done (Kids Games) | Still to do |
 |---|---|
-| Accounts YC, JY, SL, CJ, Guest (`<code>@kidsgames.invalid`), PIN = password | Publish the rules update (section 1) |
-| `players/{uid}` documents with the codes | Add 嬤 (section 3) |
-| Rules with the KidsChinese block (2026-11-23) | Sign in as SL and set each child's level (section 2) |
+| Accounts YC, JY, SL, CJ, Guest (`<code>@kidsgames.invalid`), PIN = password | Add 嬤 (section 3) |
+| `players/{uid}` documents with the codes | Sign in as SL and set each child's level (section 2) |
+| Rules with the KidsChinese block (2026-11-23) | |
+| Rules update: level 4, parents study, 嬤 (2026-11-23) | |
 | API key restriction: `https://seanlin-larc.github.io/*`, `http://localhost:8000/*` | |
 | `admin/reset-pin.mjs` in the Kids Games repo | |
 
@@ -18,8 +19,8 @@ There is no new project, no new account and no new PIN.
 The rules for both sites are in **one file**: `firebase/firestore.rules` in the **Kids Games** repo.
 The KidsChinese part is the block "KidsChinese flash cards" near the end (collection `chinese`).
 
-1. Make sure the Kids Games file has that block. Status (2026-11-23): Sean published the merged file,
-   and Kids Games `main` has the same file (commit `c7cd314`, from `docs/kidsgames-kidschinese-rules.patch`).
+1. Make sure the Kids Games file has that block. Status (2026-11-23): Sean published the updated file,
+   and Kids Games `main` has the same file (commit `b91fa7b`, from `docs/kidsgames-rules-update.patch`).
 2. Open the [Firebase console for kidsgame-7a262](https://console.firebase.google.com/project/kidsgame-7a262/firestore) → **Firestore Database** → **Rules**.
 3. Keep a copy of the current rules.
 4. Replace all of the text with the **complete** Kids Games file. Click **Publish**.
@@ -39,17 +40,14 @@ What the KidsChinese block allows after the update (the role comes from `players
 
 The Kids Games rules are not changed.
 
-**Pending (2026-11-23): the rules update** for level 4, for parents who study, and for 嬤 (code `AMA`).
+**Done (2026-11-23): the rules update** for level 4, for parents who study, and for 嬤 (code `AMA`).
 See [docs/2026-11-23_kidsgames-rules-update-handoff.md](../docs/2026-11-23_kidsgames-rules-update-handoff.md).
-Until it is published: level 4 cannot be set, SL and CJ see the parent page but cannot study, and 嬤 sees
-"Cannot read progress".
 
 ## 2. Set the levels
 
 1. Open https://seanlin-larc.github.io/KidsChinese/ and sign in as **SL** with the Kids Games PIN.
 2. The parent page shows YC and JY. Set each child's **Level** (程度).
    The levels are 學前 Starters, 初階 Beginner, 四年級 Grade 4 and 小學 Elementary (see README, "Levels").
-   小學 Elementary needs the rules update (section 1).
    A parent sets their own level in **設定 Settings** (on their study page).
 3. Sign out. Sign in as **YC**, do one round, and check that the stars stay after a reload.
 
@@ -75,8 +73,8 @@ Until it is published: level 4 cannot be set, SL and CJ see the parent page but 
    3. **Document ID:** paste the UID. Do not use **Auto-ID**.
    4. Add one field: name `code`, type **string**, value `AMA` (capital letters). Click **Save**.
    5. Check: the new document sits next to the other five, and each has one field `code`.
-4. **Publish the rules update** (section 1). First a chat with push access to `kidsgames` applies the
-   patch and merges it (see the handoff). Then publish the **complete** file from Kids Games `main`.
+4. **Rules update — done (2026-11-23).** Kids Games `main` has it (commit `b91fa7b`), and Sean published
+   the complete file (section 1).
 5. **Put the new KidsChinese page online:** merge the KidsChinese branch to `main`. GitHub Pages updates
    in about a minute. (Steps 4 and 5 can be in either order. 嬤 can use the site only after both.)
 6. **Test** on a phone or iPad:

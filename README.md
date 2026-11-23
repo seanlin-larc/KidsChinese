@@ -54,9 +54,9 @@ Sources (checked 2026-11-23):
 
 Levels 3 and 4 need more words. To add them, follow [Add or change words](#add-or-change-words).
 
-**Level 4 needs a rules change.** The published Kids Games rules accept levels 1–3 only. Until the change
-in [docs/2026-11-23_kidsgames-rules-update-handoff.md](docs/2026-11-23_kidsgames-rules-update-handoff.md) is published,
-a parent cannot select 小學 Elementary (the page shows "Could not set the level").
+**Level 4 needs the Kids Games rules update.** Status (2026-11-23): done. Sean published the rules that accept
+levels 1–4 (Kids Games `main`, commit `b91fa7b`). See
+[docs/2026-11-23_kidsgames-rules-update-handoff.md](docs/2026-11-23_kidsgames-rules-update-handoff.md).
 
 The level numbers stay the same in Firestore, but their names changed on 2026-11-23:
 1 初級 → 學前, 2 中級 → 初階, 3 高級 → 四年級. A child who had level 2 now has 初階 Beginner (1000 characters).
@@ -67,7 +67,7 @@ KidsChinese uses the Kids Games project (`kidsgame-7a262`), so the accounts, PIN
 One step is left: publish the Kids Games rules file that has the KidsChinese block, then set the levels.
 See [firebase/SETUP.md](firebase/SETUP.md). Until the rules are published, the site shows "Cannot read progress".
 
-Status (2026-11-23): Sean published the merged rules. Kids Games `main` has the same file (commit `c7cd314`).
+Status (2026-11-23): Sean published the rules update. Kids Games `main` has the same file (commit `b91fa7b`).
 
 ## Accounts and account control
 

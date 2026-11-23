@@ -2,7 +2,8 @@
 
 > 本文是 [2026-11-23_kidsgames-rules-update-handoff.md](2026-11-23_kidsgames-rules-update-handoff.md) 的繁體中文翻譯。兩者不一致時，以英文版為準。
 
-**狀態（2026-11-23）：尚未完成。** KidsChinese 的工作階段無法推送到 `seanlin-larc/kidsgames`。
+**狀態（2026-11-23）：已完成。** Kids Games 的 `main` 已有這個 patch（commit `b91fa7b`），
+Sean 也已發布完整的規則檔。見文末的「結果」。
 本文取代先前只有第 4 級的交接文件。
 
 對象：**有權限推送到 `seanlin-larc/kidsgames`** 的對話（Claude Code、Codex 或其他 agent），
@@ -60,3 +61,13 @@ AMA 沒有加入 `shared/session.js`，所以她不在 Kids Games 的登入頁�
 - 套用 patch 後的 Kids Games 規則測試：19 個全部通過。
 - 用套用 patch 後的規則執行 KidsChinese 端對端測試：7 個全部通過。其中包括嬤：登入、家長頁、
   一回合練習存到 `chinese/AMA`，以及她自己的程度。
+
+## 結果（2026-11-23）
+
+- 一個有推送權限的 Claude Code 工作階段把 patch 原樣套用到 `seanlin-larc/kidsgames`。
+- Kids Games 規則測試：19 個全部通過。KidsChinese 的 `tests/accounts.test.mjs` 用新規則檔也通過。
+- Kids Games 的 `main`：從 `ccfd684` 快轉到 `b91fa7b`。Kids Games 的頁面沒有改變。
+- Sean 已在 Firebase 主控台發布 Kids Games `main` 的完整檔案。
+- 附帶影響：Kids Games 規則讓每個有 `players/{uid}` 文件的帳號都有家人權限。
+  所以 AMA 也能讀取 Kids Games 的成績、儲存自己的結果，和 Guest 一樣。
+  她不能修改拼圖庫（只有 SL 和 CJ 可以）。

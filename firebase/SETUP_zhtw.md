@@ -7,9 +7,10 @@ KidsChinese 使用 **Kids Games** 的 Firebase 專案（`kidsgame-7a262`）和�
 
 | 已完成（Kids Games） | 還要做 |
 |---|---|
-| 帳號 YC、JY、SL、CJ、Guest（`<code>@kidsgames.invalid`），PIN 碼 = 密碼 | 發布規則更新（第 1 節） |
-| 含有代號的 `players/{uid}` 文件 | 加入嬤（第 3 節） |
-| 含有 KidsChinese 區塊的規則（2026-11-23） | 用 SL 登入，設定每個孩子的程度（第 2 節） |
+| 帳號 YC、JY、SL、CJ、Guest（`<code>@kidsgames.invalid`），PIN 碼 = 密碼 | 加入嬤（第 3 節） |
+| 含有代號的 `players/{uid}` 文件 | 用 SL 登入，設定每個孩子的程度（第 2 節） |
+| 含有 KidsChinese 區塊的規則（2026-11-23） | |
+| 規則更新：第 4 級、家長練習、嬤（2026-11-23） | |
 | API 金鑰限制：`https://seanlin-larc.github.io/*`、`http://localhost:8000/*` | |
 | Kids Games repo 裡的 `admin/reset-pin.mjs` | |
 
@@ -18,8 +19,8 @@ KidsChinese 使用 **Kids Games** 的 Firebase 專案（`kidsgame-7a262`）和�
 兩個網站的規則在**同一個檔案**：**Kids Games** repo 的 `firebase/firestore.rules`。
 KidsChinese 的部分是接近結尾的「KidsChinese flash cards」區塊（`chinese` 集合）。
 
-1. 確認 Kids Games 的檔案有這個區塊。狀態（2026-11-23）：Sean 已發布合併後的檔案，
-   而且 Kids Games 的 `main` 有相同的檔案（commit `c7cd314`，來自 `docs/kidsgames-kidschinese-rules.patch`）。
+1. 確認 Kids Games 的檔案有這個區塊。狀態（2026-11-23）：Sean 已發布更新後的檔案，
+   而且 Kids Games 的 `main` 有相同的檔案（commit `b91fa7b`，來自 `docs/kidsgames-rules-update.patch`）。
 2. 開啟 [kidsgame-7a262 的 Firebase 主控台](https://console.firebase.google.com/project/kidsgame-7a262/firestore) → **Firestore Database** → **Rules**。
 3. 保留一份目前規則的副本。
 4. 用**完整的** Kids Games 檔案取代所有文字。按 **Publish**。
@@ -39,16 +40,14 @@ KidsChinese 的部分是接近結尾的「KidsChinese flash cards」區塊（`ch
 
 Kids Games 的規則沒有改變。
 
-**待辦（2026-11-23）：規則更新**，用於第 4 級、家長練習，以及嬤（代號 `AMA`）。
+**已完成（2026-11-23）：規則更新**，用於第 4 級、家長練習，以及嬤（代號 `AMA`）。
 見 [docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md](../docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md)。
-發布之前：不能設定第 4 級，SL 和 CJ 看得到家長頁但不能練習，嬤會看到「Cannot read progress」。
 
 ## 2. 設定程度
 
 1. 開啟 https://seanlin-larc.github.io/KidsChinese/，用 **SL** 和 Kids Games 的 PIN 碼登入。
 2. 家長頁會顯示 YC 和 JY。設定每個孩子的**程度**（Level）。
    程度有 學前 Starters、初階 Beginner、四年級 Grade 4 和 小學 Elementary（見 README 的「程度」）。
-   小學 Elementary 需要規則更新（第 1 節）。
    家長在自己練習頁的 **設定 Settings** 裡設定自己的程度。
 3. 登出。用 **YC** 登入，做一回合，重新整理後確認星星還在。
 
@@ -73,8 +72,8 @@ Kids Games 的規則沒有改變。
    3. **Document ID：** 貼上 UID。不要用 **Auto-ID**。
    4. 加一個欄位：名稱 `code`，類型 **string**，值 `AMA`（大寫）。按 **Save**。
    5. 檢查：新文件和其他五份放在一起，每份都有一個 `code` 欄位。
-4. **發布規則更新**（第 1 節）。先由有 `kidsgames` 推送權限的對話套用 patch 並合併（見交接文件）。
-   然後從 Kids Games 的 `main` 發布**完整的**檔案。
+4. **規則更新——已完成（2026-11-23）。** Kids Games 的 `main` 已有它（commit `b91fa7b`），Sean 也已發布
+   完整的檔案（第 1 節）。
 5. **讓新的 KidsChinese 頁面上線：** 把 KidsChinese 分支合併到 `main`。GitHub Pages 大約一分鐘後更新。
    （第 4、5 步的順序不拘。兩步都完成後，嬤才能使用網站。）
 6. **在手機或 iPad 上測試：**

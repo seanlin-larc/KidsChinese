@@ -2,7 +2,8 @@
 
 繁體中文版：[2026-11-23_kidsgames-rules-update-handoff_zhtw.md](2026-11-23_kidsgames-rules-update-handoff_zhtw.md)
 
-**Status (2026-11-23): not done.** The KidsChinese session could not push to `seanlin-larc/kidsgames`.
+**Status (2026-11-23): done.** Kids Games `main` has the patch (commit `b91fa7b`), and Sean published
+the complete rules file. See "Result" at the end.
 This replaces the earlier level-4-only handoff.
 
 For: a chat (Claude Code, Codex or another agent) that has **push access to `seanlin-larc/kidsgames`**,
@@ -22,7 +23,7 @@ The KidsChinese app changed in three ways. The published rules refuse all three:
    (a test player). The rules allow progress for YC and JY only.
 3. **New parent 嬤 (grandma), code `AMA`,** account `ama@kidsgames.invalid`. She has the same access as SL and CJ.
 
-Until the new rules are published, SL and CJ see the parent page as before, but with no 練習 Study button
+Before the new rules were published, SL and CJ see the parent page as before, but with no 練習 Study button
 and a note about this update. 嬤 sees "Cannot read progress". YC and JY are not affected.
 Level 4 also fails until then ("Could not set the level").
 
@@ -60,3 +61,13 @@ AMA is not added to `shared/session.js`, so she is not on the Kids Games sign-in
 - Kids Games rules tests with the patch: 19 of 19 pass.
 - KidsChinese end-to-end test with the patched rules: 7 of 7 pass. This includes 嬤: sign-in, the parent page,
   a study round saved to `chinese/AMA`, and her own level.
+
+## Result (2026-11-23)
+
+- A Claude Code session with push access applied the patch to `seanlin-larc/kidsgames` without changes.
+- Kids Games rules tests: 19 of 19 pass. The KidsChinese `tests/accounts.test.mjs` passes with the new rules file.
+- Kids Games `main`: fast-forward from `ccfd684` to `b91fa7b`. The Kids Games pages did not change.
+- Sean published the complete file from Kids Games `main` in the Firebase console.
+- Side effect: the Kids Games rules give family access to every account with a `players/{uid}` document.
+  So AMA can also read Kids Games scores and save her own results, the same as Guest.
+  She cannot change the puzzle library (SL and CJ only).
