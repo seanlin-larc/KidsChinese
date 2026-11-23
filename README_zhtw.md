@@ -177,6 +177,12 @@ npm run crosscheck
 
 `npm test` 檢查：每個詞都是 2–3 個繁體字、每個字有一個有效的拼音音節、程度正確、第 1、2 級的字都有用到，以及每個詞只在一個卡組裡。它也測試注音轉換、複習排程、帳號清單，以及（當 Kids Games 的 checkout 在本 repo 旁邊，或設定了 `KIDSGAMES_RULES` 時）Kids Games 規則裡的學習者和家長代號是否相同。
 
+修改詞語後，也請更新 `notes-with-llm` repo（在本 repo 旁邊）裡的詞表筆記：
+
+```bash
+node tools/export-notes.mjs ../notes-with-llm/projects/kidsChinese/words
+```
+
 `npm run crosscheck` 把你的拼音和教育部辭典比對（npm 套件 `@leonsilicon/moedict-data`，來自 g0v 萌典資料）。辭典裡有的詞，必須是辭典的讀音之一。辭典裡沒有的詞，每個字都必須是辭典裡該字的讀音之一。它印出的每一行都需要人工檢查。
 
 ### Firebase 測試
@@ -217,6 +223,7 @@ firebase/SETUP.md        要在 Firebase 主控台發布什麼
 firebase/tests/          端對端測試（模擬器、Kids Games 規則）
 tests/                   單元測試（node --test）
 tools/crosscheck.mjs     用教育部辭典檢查拼音
+tools/export-notes.mjs   產生每個程度的字表和字卡筆記（notes-with-llm）
 ```
 
 ## 裝置儲存鍵

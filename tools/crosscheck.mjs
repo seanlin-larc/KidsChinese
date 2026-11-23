@@ -11,6 +11,7 @@ import { DECKS } from '../js/data/words.js';
 // Words that differ from the dictionary on purpose. A person checked each one.
 const REVIEWED = {
   '姊姊': 'Taiwan textbooks read jiě jie. The word entry has the old reading zǐ zi; the character 姊 lists jiě first.',
+  '姊妹': 'Same as 姊姊: the textbooks read 姊 as jiě. The word entry has zǐ mèi.',
   '它們': 'The word entry has the old reading tuō men; the character 它 lists tā first.',
   '魚兒': 'The dictionary writes the r-sound (yúr). The card shows 兒 as a neutral-tone syllable.',
 };

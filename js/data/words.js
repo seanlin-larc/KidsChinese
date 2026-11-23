@@ -56,7 +56,7 @@ export const DECKS = [
       { w: '祖母', p: 'zu3 mu3', en: 'grandmother', lv: 2 },
       { w: '孫子', p: 'sun1 zi5', en: 'grandson', lv: 2 },
       { w: '兄弟', p: 'xiong1 di4', en: 'brothers', lv: 2 },
-      { w: '姊妹', p: 'zi3 mei4', en: 'sisters', lv: 2 },
+      { w: '姊妹', p: 'jie3 mei4', en: 'sisters', lv: 2, tw: 'Taiwan reads 姊 as jiě; mainland reads it zǐ and writes 姐妹' },
       { w: '家庭', p: 'jia1 ting2', en: 'family, household', lv: 2 },
       { w: '兄長', p: 'xiong1 zhang3', en: 'elder brother', lv: 2 },
       { w: '舅舅', p: 'jiu4 jiu5', en: "uncle (mom's brother)", lv: 3 },

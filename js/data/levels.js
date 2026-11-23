@@ -14,7 +14,7 @@
 //
 // Notes on the list:
 // - The 600 characters of the sidonie.ca flash cards are the first 600 of this list.
-// - Position 1413 is 〇 (zero). Positions 1659 and 1700 are both 躍, so levels 3 and 4 have
+// - Position 1413 is 〇 (zero). Positions 1669 and 1710 are both 躍, so levels 3 and 4 have
 //   1799 and 2999 different characters.
 
 export const LEVELS = [

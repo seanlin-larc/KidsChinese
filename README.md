@@ -188,6 +188,12 @@ npm run crosscheck
 
 `npm test` checks that every word has 2–3 Traditional characters, one valid pinyin syllable for each character, and the correct level, that levels 1 and 2 use all their characters, and that a word is in one deck only. It also tests the Zhuyin converter, the review schedule, the account list, and (when a Kids Games checkout is next to this repo, or `KIDSGAMES_RULES` is set) that the Kids Games rules have the same learner and parent codes.
 
+After a word change, also update the word-list notes in the `notes-with-llm` repo (next to this repo):
+
+```bash
+node tools/export-notes.mjs ../notes-with-llm/projects/kidsChinese/words
+```
+
 `npm run crosscheck` compares your pinyin with the Ministry of Education dictionary (npm package `@leonsilicon/moedict-data`, from the g0v moedict data). A word that is in the dictionary must have a dictionary reading. For a word that is not in the dictionary, each character must have a dictionary reading. Each line that it prints needs a person to check it.
 
 ### Firebase tests
@@ -228,6 +234,7 @@ firebase/SETUP.md        what to publish in the Firebase console
 firebase/tests/          end-to-end test (emulators, Kids Games rules)
 tests/                   unit tests (node --test)
 tools/crosscheck.mjs     pinyin check against the Ministry of Education dictionary
+tools/export-notes.mjs   writes the character and card notes of each level (notes-with-llm)
 ```
 
 ## Device storage keys
