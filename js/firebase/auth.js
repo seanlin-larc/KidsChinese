@@ -5,10 +5,12 @@
 // Firebase project: Kids Games (kidsgame-7a262), shared with the Kids Games site.
 // Firestore data (rules: KidsChinese block in kidsgames/firebase/firestore.rules):
 //   chinese/{code}                 { level, updatedAt, updatedBy }        parents write
-//   chinese/{code}/data/summary    { stars, streak, daily, updatedAt }    the learner writes
+//   chinese/{code}/data/summary    { stars, streak, daily, updatedAt }    the account itself writes
 //   chinese/{code}/data/prefs      { showPinyin, showEnglish, sessionSize, speechRate, avatar, updatedAt }
-//   chinese/{code}/cards/{cardId}  { box, due, seen, right, updatedAt }   the learner writes
-// A parent resets progress by deleting the cards and the summary.
+//   chinese/{code}/cards/{cardId}  { box, due, seen, right, updatedAt }   the account itself writes
+// {code} is any account (children and parents: parents study too).
+// A parent sets the level of a child and of themself. A parent resets progress (of a child or
+// of themself) by deleting the cards and the summary.
 //
 // Offline: Firestore keeps a copy on the device. Reads use the copy when there is no
 // internet, and writes wait on the device until the internet comes back.
@@ -17,7 +19,7 @@
 // the Firebase emulators running (see firebase/tests/README.md).
 
 import { FIREBASE_CONFIG, SDK } from './config.js';
-import { accountForEmail, accountForCode, LEARNERS } from '../accounts.js';
+import { accountForEmail, accountForCode } from '../accounts.js';
 
 const EMULATOR = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   && new URLSearchParams(location.search).has('emulator');
@@ -92,8 +94,8 @@ const prefsRef = (code) => F.doc(db, COL, code, 'data', 'prefs');
 const cardsRef = (code) => F.collection(db, COL, code, 'cards');
 const cardRef = (code, id) => F.doc(db, COL, code, 'cards', id);
 
-function checkLearner(code) {
-  if (!LEARNERS.includes(code)) throw Object.assign(new Error('Not a learner: ' + code), { code: 'app/not-learner' });
+function checkAccount(code) {
+  if (!accountForCode(code)) throw Object.assign(new Error('Not an account: ' + code), { code: 'app/not-account' });
 }
 
 // Reads one document. Offline: uses the copy on the device. Returns the data or null.
@@ -115,12 +117,12 @@ async function read(ref) {
 const strip = ({ updatedAt, updatedBy, ...rest }) => rest;
 
 /**
- * Everything about one learner:
+ * Everything about one account (a child, or a parent who studies):
  * { level, prefs, summary, cards: { [cardId]: { box, due, seen, right } } }
  * level, prefs and summary are null when not set yet.
  */
 export async function loadLearner(code) {
-  checkLearner(code);
+  checkAccount(code);
   const [learner, summary, prefs, cardSnap] = await Promise.all([
     read(learnerRef(code)), read(summaryRef(code)), read(prefsRef(code)), F.getDocs(cardsRef(code)),
   ]);
@@ -140,7 +142,7 @@ export async function loadLearner(code) {
  * which can be much later when there is no internet. Do not wait for it to go on.
  */
 export function saveAnswer(code, cardId, card, summary) {
-  checkLearner(code);
+  checkAccount(code);
   const b = F.writeBatch(db);
   b.set(cardRef(code, cardId), {
     box: card.box, due: card.due, seen: card.seen, right: card.right, updatedAt: F.serverTimestamp(),
@@ -155,7 +157,7 @@ export function saveAnswer(code, cardId, card, summary) {
 }
 
 export function savePrefs(code, prefs) {
-  checkLearner(code);
+  checkAccount(code);
   return F.setDoc(prefsRef(code), {
     showPinyin: !!prefs.showPinyin,
     showEnglish: !!prefs.showEnglish,
@@ -169,7 +171,7 @@ export function savePrefs(code, prefs) {
 /* ---------- parent controls ---------- */
 
 export async function setLevel(code, level) {
-  checkLearner(code);
+  checkAccount(code);
   const me = await currentPlayer();
   return F.setDoc(learnerRef(code), { level, updatedAt: F.serverTimestamp(), updatedBy: me.code });
 }
@@ -177,7 +179,7 @@ export async function setLevel(code, level) {
 // Deletes all card progress and the summary (stars, streak, daily count) of one learner.
 // The level and the preferences stay. Needs internet to finish.
 export async function resetProgress(code) {
-  checkLearner(code);
+  checkAccount(code);
   const snap = await F.getDocs(cardsRef(code));
   const refs = [...snap.docs.map((d) => d.ref), summaryRef(code)];
   for (let i = 0; i < refs.length; i += 400) {

@@ -14,9 +14,9 @@
 - **4 個程度，依字來分**（見[程度](#程度)）：學前 Starters（929 個詞）、初階 Beginner（再加 583 個）、四年級 Grade 4（再加 97 個）、小學 Elementary（再加 26 個）。第 1、2 級的 1000 個字，每一個字都至少出現在一個詞裡。
 - **答案面採用臺灣課本格式**：注音直排在每個字的右邊，拼音在下面。英文意思可以關掉。
 - **聆聽按鈕**：瀏覽器把詞語唸出來。裝置有臺灣華語（zh-TW）語音時，就用臺灣語音。
-- **Kids Games 帳號和 PIN 碼**：YC 和 JY 是學習者，SL 和 CJ 是家長。Guest 不能使用 KidsChinese。在同一台裝置上，登入一次就可以同時使用 Kids Games 和 KidsChinese。PIN 碼連續錯 10 次（兩個網站合計），該帳號在這台裝置上鎖住 30 分鐘。
+- **Kids Games 帳號和 PIN 碼**：YC 和 JY 是學習者，SL、CJ 和嬤（奶奶）是家長，家長也可以用自己的進度練習。Guest 不能使用 KidsChinese。在同一台裝置上，登入一次就可以同時使用 Kids Games 和 KidsChinese。PIN 碼連續錯 10 次（兩個網站合計），該帳號在這台裝置上鎖住 30 分鐘。
 - **進度跟著孩子走**：答案、星星和連續天數存在 Firestore，所以 iPad 和電腦之間會同步。第一次登入之後，離線也能用，答案會在連線後送出。
-- **家長頁**（只有 SL、CJ）：設定每個孩子的程度，查看每個孩子的進度（已學會的詞、星星、連續天數、各卡組進度、最常答錯的詞），以及重設孩子的進度。Firestore 規則在伺服器上強制執行：孩子不能改自己的程度、不能重設進度，也看不到另一個孩子的資料。
+- **家長頁**（只有 SL、CJ、嬤）：設定每個孩子的程度，查看每個孩子的進度（已學會的詞、星星、連續天數、各卡組進度、最常答錯的詞），以及重設孩子的進度。Firestore 規則在伺服器上強制執行：孩子不能改自己的程度、不能重設進度，也看不到另一個孩子的資料。
 - **間隔複習**（Leitner 盒子法）。孩子會的卡，會在 1、3、7、14、30 天後再出現。答錯的卡，同一回合稍後再出現，隔天也會再出現。
 - **獎勵**：每答對一題得一顆星，全對的回合有額外獎勵，每天目標 10 張卡，每個卡組有 0–3 顆星。
 
@@ -46,7 +46,7 @@
 
 第 3、4 級還需要更多詞。新增方法見[新增或修改詞語](#新增或修改詞語)。
 
-**第 4 級需要修改規則。** 目前已發布的 Kids Games 規則只接受第 1–3 級。在 [docs/2026-11-23_kidsgames-level4-handoff_zhtw.md](docs/2026-11-23_kidsgames-level4-handoff_zhtw.md) 的修改發布之前，家長不能選 小學 Elementary（頁面會顯示「Could not set the level」）。
+**第 4 級需要修改規則。** 目前已發布的 Kids Games 規則只接受第 1–3 級。在 [docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md](docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md) 的修改發布之前，家長不能選 小學 Elementary（頁面會顯示「Could not set the level」）。
 
 Firestore 裡的程度數字不變，但名稱在 2026-11-23 改了：
 1 初級 → 學前，2 中級 → 初階，3 高級 → 四年級。原本是第 2 級的孩子，現在是 初階 Beginner（1000 字）。
@@ -64,10 +64,13 @@ KidsChinese 使用 Kids Games 專案（`kidsgame-7a262`），所以帳號、PIN 
 | 帳號 | 角色 | 可以做什麼 |
 |---|---|---|
 | YC、JY | 學習者 | 練習、查看和儲存自己的進度、修改自己的顯示設定 |
-| SL、CJ | 家長 | 家長頁：設定程度、查看兩個孩子的進度、重設進度 |
+| SL、CJ、嬤（代號 `AMA`） | 家長 | 家長頁：設定程度、查看兩個孩子的進度、重設進度。也可以用自己的進度和程度練習（測試玩家） |
 | Guest | — | 不能做任何事。頁面會請 Guest 登出 |
 
 - 帳號就是 Kids Games 帳號，`<code>@kidsgames.invalid`（Firebase 電子郵件／密碼登入）。PIN 碼就是密碼（和 Kids Games 相同）。由 Firebase 檢查。程式碼裡沒有任何 PIN 碼。
+- 頁面顯示每個帳號的 `name`（`AMA` 顯示「嬤」，其他帳號顯示代號）。
+- 家長要練習、以及使用嬤的帳號，需要 2026-11-23 的 Kids Games 規則更新
+  （見 [firebase/SETUP_zhtw.md](firebase/SETUP_zhtw.md) 第 1、3 節）。
 - 頁面從電子郵件取得代號和角色（`js/accounts.js`），所以離線也能運作。Firestore 規則用 Kids Games 的 `players/{uid}` 文件檢查角色。刪除這份文件，就能取消該帳號對兩個網站的存取權。
 - **兩個網站共用一次登入**（同一個專案、同一個網站）。在一個網站登出，另一個網站也會登出。共用 iPad 時，換另一個孩子之前請先登出。
 - **PIN 碼錯誤鎖定：** 連續 10 次錯誤，該帳號在這台裝置上鎖住 30 分鐘。鎖定用的 `kg-lock` 和 Kids Games 共用。這個檢查只在網頁上；Firebase 也會減慢大量錯誤嘗試。
@@ -79,10 +82,11 @@ Firestore 資料：
 共用的 Kids Games 資料庫中的 `chinese` 集合：
 
 ```
-chinese/{YC|JY}                 程度（家長寫入）
-chinese/{YC|JY}/data/summary    星星、連續天數、今天的張數（孩子寫入）
-chinese/{YC|JY}/data/prefs      拼音、英文、每回合張數、語音速度、avatar（不顯示）
-chinese/{YC|JY}/cards/{cardId}  盒子、下次複習日、看過次數、答對次數（孩子寫入）
+chinese/{code}                  程度（家長寫入）
+chinese/{code}/data/summary     星星、連續天數、今天的張數（帳號本人寫入）
+chinese/{code}/data/prefs       拼音、英文、每回合張數、語音速度、avatar（不顯示）
+chinese/{code}/cards/{cardId}   盒子、下次複習日、看過次數、答對次數（帳號本人寫入）
+{code} = YC、JY、SL、CJ 或 AMA
 ```
 
 這個集合的規則是 `kidsgames/firebase/firestore.rules` 裡的「KidsChinese」區塊。
@@ -198,7 +202,7 @@ npm run crosscheck
 index.html               頁面外框
 css/style.css            樣式（淺色和深色）
 js/app.js                畫面：登入、學習者首頁、練習、設定、家長頁
-js/accounts.js           四個帳號和角色（沒有 Firebase）
+js/accounts.js           五個帳號、名稱和角色（沒有 Firebase）
 js/lock.js               裝置上的 PIN 碼錯誤鎖定（沒有 Firebase）
 js/load.js               在時限內載入 Firebase 程式碼；目前誰登入（沒有 Firebase）
 js/stuck.js              「The page did not load. Reload the page.」訊息

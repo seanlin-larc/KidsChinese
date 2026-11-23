@@ -4,7 +4,7 @@ Read this file and `README.md` before you change anything.
 
 ## What this is
 
-Traditional Chinese flash cards (Zhuyin + Pinyin answers) for YC and JY, with parent controls for SL and CJ.
+Traditional Chinese flash cards (Zhuyin + Pinyin answers) for YC and JY, with parent controls for SL, CJ and 嬤 (code AMA). Parents can also study.
 Static pages on GitHub Pages (`main` / root = the live site). It uses the **Kids Games** Firebase project
 (`kidsgame-7a262`) and accounts; one sign-in covers both sites. Data is in the Firestore collection `chinese`. The owner is not a professional programmer: keep code simple and readable.
 No build step, no framework. Plain HTML, CSS and ES modules.

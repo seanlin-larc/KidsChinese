@@ -32,7 +32,7 @@ const SITE = 'http://localhost:8000/';
 const APP = SITE + '?emulator';
 const PROJECT = 'demo-kidsgames';
 const FS = `http://127.0.0.1:8080/v1/projects/${PROJECT}/databases/(default)/documents`;
-const PIN = { YC: '111111', JY: '222222', SL: '333333', CJ: '444444', Guest: '555555' };   // emulator only
+const PIN = { YC: '111111', JY: '222222', SL: '333333', CJ: '444444', Guest: '555555', AMA: '666666' };   // emulator only
 const OUT = process.env.E2E_SCREENSHOTS || null;
 
 let server, browser;
@@ -254,6 +254,47 @@ test('the learner sees the level the parent set, and the reset', async () => {
   await page.waitForSelector('[data-screen=home]');
   assert.match(await page.textContent('header'), /⭐ 0/);
   assert.match(await page.textContent('#app'), new RegExp(`0 of ${wordsAt(1)} words learned`));
+  assert.deepEqual(page.errors, []);
+});
+
+test('grandma (AMA, shown as 嬤): parent page, then her own study and level', async () => {
+  const page = await newPage();
+  await page.goto(APP);
+  await page.waitForSelector('[data-screen=signin]');
+  assert.equal((await page.textContent('[data-action=pick][data-code=AMA]')).trim(), '嬤');
+  await signIn(page, 'AMA');
+  await page.waitForSelector('[data-screen=parent]');
+  const text = await page.textContent('#app');
+  assert.match(text, /家長 Parent · 嬤/);
+  assert.match(text, /Signed in as 嬤/);
+  assert.equal(await page.$$eval('.kid', (x) => x.length), 2, 'she sees YC and JY');
+  await shot(page, '08-ama-parent');
+
+  // Her own cards: the progress goes to chinese/AMA.
+  await page.click('[data-action=home]');
+  await page.waitForSelector('[data-screen=home]');
+  assert.equal((await page.textContent('.who')).trim(), '嬤');
+  await shot(page, '09-ama-home');
+  await studyRound(page, 'family');
+  await waitFor(async () => (await cardCount('AMA')) === FAMILY);
+
+  // Her own level, in Settings.
+  await page.click('[data-action=home]');
+  await page.click('[data-action=settings]');
+  await page.selectOption('select[name=level]', '3');
+  await page.click('button[type=submit]');
+  const lv = await waitFor(async () => {
+    const d = await fsGet('chinese/AMA');
+    return d && intField(d, 'level') === 3 && d;
+  });
+  assert.equal(lv.fields.updatedBy.stringValue, 'AMA');
+  assert.match(await page.textContent('#app'), /四年級 Grade 4/);
+
+  // Back to the parent page.
+  await page.click('[data-action=parent]');
+  await page.waitForSelector('[data-screen=parent]');
+  await page.click('[data-action=signout]');
+  await page.waitForSelector('[data-screen=signin]');
   assert.deepEqual(page.errors, []);
 });
 

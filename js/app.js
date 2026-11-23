@@ -3,7 +3,7 @@ import { LEVELS } from './data/levels.js';
 import { syllables, toZhuyinParts, toToneMarked } from './pinyin.js';
 import * as srs from './srs.js';
 import { speak, canSpeak, hasMandarinVoice } from './speech.js';
-import { ACCOUNTS, LEARNERS, accountForCode } from './accounts.js';
+import { ACCOUNTS, LEARNERS, accountForCode, nameOf } from './accounts.js';
 import * as L from './lock.js';
 import { access, loadAuth, withTimeout } from './load.js';
 window.kcStarted = true;   // the page script started (see js/stuck.js)
@@ -105,16 +105,29 @@ async function boot() {
   }
   session = { auth: st.auth, player: st.player };
   try {
-    if (st.player.role === 'learner') {
+    if (st.player.role === 'parent') {
+      // A parent sees the parent page first, and can also study with their own progress.
+      await loadKids();
+      me = await loadOwn(st.auth, st.player.code);
+      go({ name: 'parent' });
+    } else {
       me = withDefaults(st.player.code, await withTimeout(st.auth.loadLearner(st.player.code), 15000));
       go({ name: 'home' });
-    } else {
-      await loadKids();
-      go({ name: 'parent' });
     }
   } catch (e) {
     console.error('[kidschinese] Could not load progress:', e);
     go({ name: 'problem', kind: e && e.code === 'permission-denied' ? 'rules' : 'load' });
+  }
+}
+
+// A parent's own progress. Returns null when the rules do not allow it yet (rules older than
+// 2026-11-23): then the parent page works, but the parent cannot study.
+async function loadOwn(auth, code) {
+  try {
+    return withDefaults(code, await withTimeout(auth.loadLearner(code), 15000));
+  } catch (e) {
+    if (e && e.code === 'permission-denied') { console.warn('[kidschinese] No own progress for', code, e); return null; }
+    throw e;
   }
 }
 
@@ -178,7 +191,7 @@ function renderProblem() {
     offline: ['沒有網路 No internet', 'The first sign-in on this device needs internet. Connect to Wi-Fi, then try again.'],
     rules: ['不能讀取 Cannot read progress', 'Firebase refused to read the progress. A parent must publish the Kids Games rules with the KidsChinese block (see firebase/SETUP.md).'],
     load: ['不能讀取 Cannot read progress', 'The progress did not load. Check the internet, then try again.'],
-    'not-allowed': ['這個帳號不能用 Not for this account', `${session ? session.player.code : 'This account'} is signed in from Kids Games. ${session ? session.player.code : 'This account'} cannot use KidsChinese. Sign out, then sign in as YC, JY, SL or CJ. Sign-out also signs out of Kids Games on this device.`],
+    'not-allowed': ['這個帳號不能用 Not for this account', `${session ? session.player.code : 'This account'} is signed in from Kids Games. ${session ? session.player.code : 'This account'} cannot use KidsChinese. Sign out, then sign in as ${ACCOUNTS.map((a) => a.name).join(', ')}. Sign-out also signs out of Kids Games on this device.`],
   }[view.kind];
   return `
     <header class="top center"><h1 class="logo">學中文 <span>Flash Cards</span></h1></header>
@@ -202,7 +215,7 @@ function lockText(code) {
   const st = L.lockState(code);
   if (!st.locked) return null;
   const min = Math.max(1, Math.ceil((st.until - Date.now()) / 60000));
-  return `${code} is locked for ${min} more minute${min === 1 ? '' : 's'} (${L.LOCK_FAILS} wrong PINs).`;
+  return `${nameOf(code)} is locked for ${min} more minute${min === 1 ? '' : 's'} (${L.LOCK_FAILS} wrong PINs).`;
 }
 
 function signinMsg() {
@@ -210,14 +223,14 @@ function signinMsg() {
   if (!view.selected) return { text: '選你的名字 Pick your name, then type your PIN.' };
   const lt = lockText(view.selected);
   if (lt) return { text: lt, bad: true };
-  return { text: `${view.selected}，請輸入密碼 Type your PIN.` };
+  return { text: `${nameOf(view.selected)}，請輸入密碼 Type your PIN.` };
 }
 
 function renderSignin() {
   const acct = (a) => {
     const on = view.selected === a.code;
     return `<button type="button" class="acct ${a.role} ${on ? 'on' : ''}" role="radio" aria-checked="${on}" data-action="pick" data-code="${a.code}" ${view.busy ? 'disabled' : ''}>
-      <span class="pname">${a.code}</span></button>`;
+      <span class="pname">${esc(a.name)}</span></button>`;
   };
   const msg = signinMsg();
   const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', 'clear', '0', 'back'].map((k) => {
@@ -295,7 +308,7 @@ function signInError(e) {
 
 function signedInBar() {
   return `<footer class="signed-in">
-    <span>Signed in as <b>${esc(session.player.code)}</b></span>
+    <span>Signed in as <b>${esc(nameOf(session.player.code))}</b></span>
     ${offline() ? '<span class="off" title="Progress is saved on this device and sent when you are online.">⚠️ Offline · saved on this device</span>' : ''}
     <button class="btn ghost slim" data-action="signout">Sign out</button>
   </footer>`;
@@ -330,8 +343,9 @@ function renderHome() {
 
   return `
     <header class="top">
-      <span class="who">${esc(me.code)}</span>
+      <span class="who">${esc(nameOf(me.code))}</span>
       <div class="stats">
+        ${session.player.role === 'parent' ? '<button class="btn ghost slim" data-action="parent">家長 Parent</button>' : ''}
         ${offline() ? '<span class="stat off" title="No internet. Progress is saved on this device and sent later.">⚠️ Offline</span>' : ''}
         <span class="stat" title="Day streak">🔥 ${srs.currentStreak(me.summary.streak, date)}</span>
         <span class="stat" title="Stars">⭐ ${me.summary.stars}</span>
@@ -493,12 +507,17 @@ function renderSettings() {
     ? 'This browser cannot read words aloud.'
     : hasMandarinVoice() ? 'A Mandarin voice is available.' : 'No Mandarin voice found on this device. Add one in system settings (Chinese, Taiwan).';
   return `
-    <header class="top"><button class="icon-btn" data-action="home" aria-label="Back">←</button><h1>設定 Settings · ${esc(me.code)}</h1></header>
+    <header class="top"><button class="icon-btn" data-action="home" aria-label="Back">←</button><h1>設定 Settings · ${esc(nameOf(me.code))}</h1></header>
     <main class="wrap narrow">
       <form id="settings-form" class="panel">
-        <div class="field"><span>Level 程度</span>
-          <p class="readonly">${lvl.zh} ${lvl.en} · ${allCards(me.level).length} words <small class="muted">— a parent sets the level</small></p>
-        </div>
+        ${session.player.role === 'parent'
+          ? `<label class="field"><span>Level 程度</span>
+              <select name="level">${LEVELS.map((l) => `<option value="${l.lv}" ${me.level === l.lv ? 'selected' : ''}>${l.zh} ${l.en} (${allCards(l.lv).length})</option>`).join('')}</select>
+              <small class="muted">Your own level, for testing. Set the children's levels on the parent page.</small>
+            </label>`
+          : `<div class="field"><span>Level 程度</span>
+              <p class="readonly">${lvl.zh} ${lvl.en} · ${allCards(me.level).length} words <small class="muted">— a parent sets the level</small></p>
+            </div>`}
         <label class="check"><input type="checkbox" name="showPinyin" ${p.showPinyin ? 'checked' : ''}> Show Pinyin on the answer (Zhuyin is always shown)</label>
         <label class="check"><input type="checkbox" name="showEnglish" ${p.showEnglish ? 'checked' : ''}> Show English meaning on the answer</label>
         <label class="field"><span>Cards per round</span>
@@ -512,7 +531,7 @@ function renderSettings() {
       </form>
       <section class="panel">
         <h2>Account</h2>
-        <p class="muted">Signed in as <b>${esc(me.code)}</b>. Sign out before someone else plays on this device.
+        <p class="muted">Signed in as <b>${esc(nameOf(me.code))}</b>. Sign out before someone else plays on this device.
           Kids Games and KidsChinese share the sign-in: a sign-out here also signs out of Kids Games.</p>
         <button class="btn ghost" data-action="signout">Sign out</button>
       </section>
@@ -546,7 +565,7 @@ function kidPanel(k) {
   return `
     <section class="panel kid" aria-labelledby="kid-${k.code}">
       <div class="kid-head">
-        <h2 id="kid-${k.code}">${k.code}</h2>
+        <h2 id="kid-${k.code}">${esc(nameOf(k.code))}</h2>
         <label class="level-pick">程度 Level
           <select data-action="set-level" data-code="${k.code}" aria-label="Level for ${k.code}">
             ${LEVELS.map((l) => `<option value="${l.lv}" ${k.level === l.lv ? 'selected' : ''}>${l.zh} ${l.en} (${allCards(l.lv).length})</option>`).join('')}
@@ -580,13 +599,18 @@ function kidPanel(k) {
 function renderParent() {
   return `
     <header class="top">
-      <span class="who">家長 Parent · ${esc(session.player.code)}</span>
-      <button class="icon-btn" data-action="refresh" aria-label="Refresh">↻</button>
+      <span class="who">家長 Parent · ${esc(nameOf(session.player.code))}</span>
+      <div class="stats">
+        ${me ? '<button class="btn primary slim" data-action="home">練習 Study</button>' : ''}
+        <button class="icon-btn" data-action="refresh" aria-label="Refresh">↻</button>
+      </div>
     </header>
     <main class="wrap">
-      <p class="muted">Only parents see this page. Kids cannot change their level or reset progress.
+      <p class="muted">Only parents (${ACCOUNTS.filter((a) => a.role === 'parent').map((a) => esc(a.name)).join(', ')}) see this page. Kids cannot change their level or reset progress.
+        ${me ? 'Tap <b>練習 Study</b> to practise with your own cards and level.' : ''}
         A word counts as <b>learned</b> after the child gets it right on 3 separate review days (1, then 3 days later).
         <b>Started</b> = practised at least once.</p>
+      ${me ? '' : '<p class="note">Parents can study after the Kids Games rules update (KidsChinese docs/2026-11-23_kidsgames-rules-update-handoff.md).</p>'}
       <div class="kids">${LEARNERS.map((c) => kidPanel(kids[c])).join('')}</div>
     </main>
     ${signedInBar()}`;
@@ -600,9 +624,9 @@ async function setLevel(code, level) {
   render();
   try {
     await withTimeout(session.auth.setLevel(code, level), offline() ? 2000 : 15000);
-    toast(`${code}: level set to ${levelInfo(level).zh} ${levelInfo(level).en} ✓`);
+    toast(`${nameOf(code)}: level set to ${levelInfo(level).zh} ${levelInfo(level).en} ✓`);
   } catch (e) {
-    if (e && e.code === 'app/timeout') { toast(`${code}: level saved on this device. It is sent when you are online.`); return; }
+    if (e && e.code === 'app/timeout') { toast(`${nameOf(code)}: level saved on this device. It is sent when you are online.`); return; }
     console.error('[kidschinese] setLevel failed:', e);
     k.level = before;
     render();
@@ -610,14 +634,20 @@ async function setLevel(code, level) {
   }
 }
 
+// A parent goes from the study home to the parent page. Reload the children's progress first.
+async function openParent() {
+  try { await loadKids(); } catch (e) { console.warn('[kidschinese] Could not refresh the children:', e); }
+  go({ name: 'parent' });
+}
+
 async function resetKid(code) {
   if (offline()) { toast('Reset needs internet.'); return; }
-  if (!confirm(`Reset all progress and stars for ${code}? This cannot be undone.\n\nThe level and settings stay.`)) return;
+  if (!confirm(`Reset all progress and stars for ${nameOf(code)}? This cannot be undone.\n\nThe level and settings stay.`)) return;
   try {
     const n = await withTimeout(session.auth.resetProgress(code), 30000);
     await loadKids();
     render();
-    toast(`${code}: progress reset (${n} cards cleared).`);
+    toast(`${nameOf(code)}: progress reset (${n} cards cleared).`);
   } catch (e) {
     console.error('[kidschinese] reset failed:', e);
     toast(`Could not reset (${e && e.code ? e.code : 'error'}). Try again.`);
@@ -648,6 +678,7 @@ app.addEventListener('click', (e) => {
     case 'key': pressKey(el.dataset.key); break;
     case 'home': go({ name: 'home' }); break;
     case 'settings': go({ name: 'settings' }); break;
+    case 'parent': openParent(); break;
     case 'study': startSession(el.dataset.deck); break;
     case 'flip': if (!view.flipped) { view.flipped = true; render(); } break;
     case 'speak': speak(view.queue[view.index].w, me.prefs.speechRate); break;
@@ -673,6 +704,12 @@ app.addEventListener('submit', (e) => {
     speechRate: Number(form.get('speechRate')),
   };
   background(session.auth.savePrefs(me.code, me.prefs), 'your settings');
+  const level = Number(form.get('level'));
+  if (session.player.role === 'parent' && level && level !== me.level) {
+    me.level = level;
+    me.levelSet = true;
+    background(session.auth.setLevel(me.code, level), 'your level');
+  }
   toast('Saved ✓');
   go({ name: 'home' });
 });

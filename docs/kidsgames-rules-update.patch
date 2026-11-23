@@ -1,0 +1,223 @@
+diff --git a/README.md b/README.md
+index ad684a9..305f499 100644
+--- a/README.md
++++ b/README.md
+@@ -111,7 +111,9 @@ const ctx = await gate.enterGame({ bar: document.getElementById('who') });  // n
+ ### KidsChinese uses this project
+ 
+ The KidsChinese flash cards (https://seanlin-larc.github.io/KidsChinese/, repo `seanlin-larc/KidsChinese`)
+-use this Firebase project and the same accounts. YC and JY are learners. SL and CJ are parents. Guest has no access.
++use this Firebase project and the same accounts. YC and JY are learners. SL, CJ and AMA (嬤, grandma) are parents;
++parents also study with their own progress. Guest has no access. AMA is a KidsChinese account only: it has a
++`players/{uid}` document, but it is not on the Kids Games sign-in page.
+ 
+ - Its data is in the Firestore collection `chinese`. Its rules are the "KidsChinese" block in
+   `firebase/firestore.rules`. Tests: `firebase/tests/kidschinese.rules.test.mjs`.
+diff --git a/firebase/firestore.rules b/firebase/firestore.rules
+index d3d473c..58d8b15 100644
+--- a/firebase/firestore.rules
++++ b/firebase/firestore.rules
+@@ -1,7 +1,7 @@
+ rules_version = '2';
+ // Firestore security rules for Kids Games (project kidsgame-7a262).
+ // Copy this whole file into Firebase console > Firestore > Rules, then click Publish.
+-// Family-only: only the accounts that have a players/{uid} document (SL, CJ, YC, JY, Guest)
++// Family-only: only the accounts that have a players/{uid} document (SL, CJ, YC, JY, Guest, AMA)
+ // can read or write. The KidsChinese site uses this project too (block near the end).
+ service cloud.firestore {
+   match /databases/{database}/documents {
+@@ -136,27 +136,36 @@ service cloud.firestore {
+     }
+ 
+     // ---------- KidsChinese flash cards (https://seanlin-larc.github.io/KidsChinese/) ----------
+-    // KidsChinese uses this project and these accounts. Learners: YC, JY. Parents: SL, CJ.
++    // KidsChinese uses this project and these accounts. Children: YC, JY. Parents: SL, CJ, AMA (嬤).
+     // Guest has no access. The role comes from players/{uid}.code, like the rest of this file.
+     // Tests: firebase/tests/kidschinese.rules.test.mjs. App: repo seanlin-larc/KidsChinese.
+-    //   chinese/{code}                 { level, updatedAt, updatedBy }   parents set the level
++    //   chinese/{code}                 { level, updatedAt, updatedBy }   parents set the level (1–4)
+     //   chinese/{code}/data/summary    { stars, streak, daily, updatedAt }
+     //   chinese/{code}/data/prefs      { showPinyin, showEnglish, sessionSize, speechRate, avatar, updatedAt }
+     //   chinese/{code}/cards/{cardId}  { box, due, seen, right, updatedAt }
+-    // A learner reads and writes only own progress and preferences, and cannot change the level.
+-    // A parent reads both learners, sets levels, changes preferences, and resets progress
+-    // (deletes cards and the summary). A parent does not write card answers.
++    // Everyone studies: each account reads and writes its own progress and preferences.
++    // A child cannot change the level. A parent reads both children, sets their levels, changes
++    // their preferences, and resets their progress (deletes cards and the summary).
++    // A parent also sets and resets their own level and progress (a test player).
++    // A parent does not read another parent's data, and does not write card answers for others.
+     function kcLearnerCode(code) {
+       return code in ['YC', 'JY'];
+     }
++    function kcParentCode(code) {
++      return code in ['SL', 'CJ', 'AMA'];
++    }
+     function kcParent() {
+-      return isFamily() && playerCode() in ['SL', 'CJ'];
++      return isFamily() && kcParentCode(playerCode());
+     }
+     function kcSelf(code) {
+-      return kcLearnerCode(code) && isFamily() && playerCode() == code;
++      return (kcLearnerCode(code) || kcParentCode(code)) && isFamily() && playerCode() == code;
++    }
++    // A parent manages a child, or themself.
++    function kcManages(code) {
++      return kcParent() && (kcLearnerCode(code) || playerCode() == code);
+     }
+     function kcCanRead(code) {
+-      return kcLearnerCode(code) && (kcParent() || kcSelf(code));
++      return kcSelf(code) || (kcLearnerCode(code) && kcParent());
+     }
+     function kcDateOrNull(d) {
+       return d == null || (d is string && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'));
+@@ -167,7 +176,7 @@ service cloud.firestore {
+     function kcLevelOk(d) {
+       return d.keys().hasOnly(['level', 'updatedAt', 'updatedBy'])
+         && d.keys().hasAll(['level', 'updatedAt', 'updatedBy'])
+-        && d.level in [1, 2, 3]
++        && d.level in [1, 2, 3, 4]
+         && d.updatedAt == request.time
+         && d.updatedBy == playerCode();
+     }
+@@ -203,22 +212,22 @@ service cloud.firestore {
+     }
+     match /chinese/{code} {
+       allow read: if kcCanRead(code);
+-      allow create, update: if kcLearnerCode(code) && kcParent() && kcLevelOk(request.resource.data);
++      allow create, update: if kcManages(code) && kcLevelOk(request.resource.data);
+       allow delete: if false;
+ 
+       match /cards/{cardId} {
+         allow read: if kcCanRead(code);
+         allow create, update: if kcSelf(code) && cardId.size() <= 64 && kcCardOk(request.resource.data);
+-        allow delete: if kcLearnerCode(code) && kcParent();
++        allow delete: if kcManages(code);
+       }
+       match /data/summary {
+         allow read: if kcCanRead(code);
+         allow create, update: if kcSelf(code) && kcSummaryOk(request.resource.data);
+-        allow delete: if kcLearnerCode(code) && kcParent();
++        allow delete: if kcManages(code);
+       }
+       match /data/prefs {
+         allow read: if kcCanRead(code);
+-        allow create, update: if (kcSelf(code) || (kcLearnerCode(code) && kcParent()))
++        allow create, update: if (kcSelf(code) || kcManages(code))
+           && kcPrefsOk(request.resource.data);
+         allow delete: if false;
+       }
+diff --git a/firebase/tests/kidschinese.rules.test.mjs b/firebase/tests/kidschinese.rules.test.mjs
+index 2460687..0539ffa 100644
+--- a/firebase/tests/kidschinese.rules.test.mjs
++++ b/firebase/tests/kidschinese.rules.test.mjs
+@@ -8,11 +8,11 @@ import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, u
+ 
+ let env;
+ 
+-// uid-<who>. players/{uid} documents are made in beforeEach for YC, JY, SL, CJ, Guest.
++// uid-<who>. players/{uid} documents are made in beforeEach for YC, JY, SL, CJ, AMA, Guest.
+ // OTHER has no players document. FAKE has YC's email, but its players document says JY.
+ const ACCOUNTS = {
+   YC: 'yc@kidsgames.invalid', JY: 'jy@kidsgames.invalid', SL: 'sl@kidsgames.invalid',
+-  CJ: 'cj@kidsgames.invalid', Guest: 'guest@kidsgames.invalid', OTHER: 'other@example.com', FAKE: 'yc@kidsgames.invalid',
++  CJ: 'cj@kidsgames.invalid', AMA: 'ama@kidsgames.invalid', Guest: 'guest@kidsgames.invalid', OTHER: 'other@example.com', FAKE: 'yc@kidsgames.invalid',
+ };
+ 
+ // A Firestore client signed in as this account (null = signed out).
+@@ -46,7 +46,7 @@ beforeEach(async () => {
+   // Some data for YC and JY, written with the rules turned off.
+   await env.withSecurityRulesDisabled(async (ctx) => {
+     const d = ctx.firestore();
+-    for (const code of ['YC', 'JY', 'SL', 'CJ', 'Guest']) await setDoc(doc(d, 'players', 'uid-' + code), { code });
++    for (const code of ['YC', 'JY', 'SL', 'CJ', 'AMA', 'Guest']) await setDoc(doc(d, 'players', 'uid-' + code), { code });
+     await setDoc(doc(d, 'players', 'uid-FAKE'), { code: 'JY' });
+     for (const code of ['YC', 'JY']) {
+       await setDoc(levelRef(d, code), { level: 1, updatedAt: Timestamp.now(), updatedBy: 'SL' });
+@@ -73,7 +73,7 @@ test('KidsChinese: a learner reads own data only', async () => {
+ });
+ 
+ test('KidsChinese: parents read every learner; outsiders read nothing', async () => {
+-  for (const p of ['SL', 'CJ']) {
++  for (const p of ['SL', 'CJ', 'AMA']) {
+     for (const code of ['YC', 'JY']) {
+       await assertSucceeds(getDoc(levelRef(db(p), code)));
+       await assertSucceeds(getDoc(sumRef(db(p), code)));
+@@ -106,18 +106,48 @@ test('KidsChinese: a learner cannot write the other learner, and parents cannot
+   await assertFails(setDoc(cardRef(db('YC'), 'JY'), card()));
+   await assertFails(setDoc(sumRef(db('YC'), 'JY'), summary()));
+   await assertFails(setDoc(prefsRef(db('JY'), 'YC'), prefs()));
+-  for (const p of ['SL', 'CJ']) {
++  for (const p of ['SL', 'CJ', 'AMA']) {
+     await assertFails(setDoc(cardRef(db(p), 'YC'), card()));
+     await assertFails(setDoc(sumRef(db(p), 'YC'), summary()));
+   }
+   for (const who of [null, 'OTHER', 'Guest']) {
+     await assertFails(setDoc(cardRef(db(who), 'YC'), card()));
+   }
+-  // Only YC and JY are learners; Guest is not.
+-  await assertFails(setDoc(cardRef(db('SL'), 'SL'), card()));
++  // Guest does not study.
+   await assertFails(setDoc(cardRef(db('Guest'), 'Guest'), card()));
+   await assertFails(setDoc(prefsRef(db('Guest'), 'YC'), prefs()));
+-  await assertFails(setDoc(levelRef(db('SL'), 'SL'), level('SL')));
++  await assertFails(setDoc(levelRef(db('Guest'), 'Guest'), level('Guest')));
++});
++
++test('KidsChinese: a parent studies too (own data), and does not touch another parent', async () => {
++  for (const p of ['SL', 'CJ', 'AMA']) {
++    const d = db(p);
++    const b = writeBatch(d);
++    b.set(cardRef(d, p, 'food:蘋果'), card());
++    b.set(sumRef(d, p), summary());
++    await assertSucceeds(b.commit());
++    await assertSucceeds(setDoc(prefsRef(d, p), prefs()));
++    await assertSucceeds(setDoc(levelRef(d, p), level(p, { level: 4 })));
++    await assertSucceeds(getDoc(levelRef(d, p)));
++    await assertSucceeds(getDocs(collection(d, 'chinese', p, 'cards')));
++    // Own reset.
++    await assertSucceeds(deleteDoc(cardRef(d, p, 'food:蘋果')));
++    await assertSucceeds(deleteDoc(sumRef(d, p)));
++  }
++  // AMA's data: SL and CJ cannot read or change it; the children cannot either.
++  await assertSucceeds(setDoc(sumRef(db('AMA'), 'AMA'), summary()));
++  for (const who of ['SL', 'CJ', 'YC', 'JY', 'Guest']) {
++    await assertFails(getDoc(sumRef(db(who), 'AMA')));
++    await assertFails(getDocs(collection(db(who), 'chinese', 'AMA', 'cards')));
++    await assertFails(setDoc(levelRef(db(who), 'AMA'), level(who)));
++    await assertFails(deleteDoc(sumRef(db(who), 'AMA')));
++    await assertFails(setDoc(prefsRef(db(who), 'AMA'), prefs()));
++  }
++  // A child cannot write a parent's progress.
++  await assertFails(setDoc(cardRef(db('YC'), 'SL'), card()));
++  // Codes that are not KidsChinese accounts have no data.
++  await assertFails(setDoc(levelRef(db('SL'), 'Guest'), level('SL')));
++  await assertFails(setDoc(sumRef(db('SL'), 'Guest'), summary()));
+ });
+ 
+ test('KidsChinese: card data must have the right shape', async () => {
+@@ -151,13 +181,15 @@ test('KidsChinese: only a parent sets the level, with a valid value and own code
+   await assertSucceeds(setDoc(levelRef(db('SL'), 'YC'), level('SL', { level: 3 })));
+   await assertSucceeds(setDoc(levelRef(db('CJ'), 'JY'), level('CJ', { level: 1 })));
+   await assertSucceeds(setDoc(levelRef(db('CJ'), 'JY'), level('CJ', { level: 2 })));
++  await assertSucceeds(setDoc(levelRef(db('SL'), 'JY'), level('SL', { level: 4 })));
++  await assertSucceeds(setDoc(levelRef(db('AMA'), 'YC'), level('AMA', { level: 2 })));
+   // A learner cannot change any level, own or other.
+   await assertFails(setDoc(levelRef(db('YC'), 'YC'), level('SL', { level: 3 })));
+   await assertFails(updateDoc(levelRef(db('JY'), 'JY'), { level: 3 }));
+   await assertFails(setDoc(levelRef(db('JY'), 'YC'), level('SL')));
+   await assertFails(setDoc(levelRef(db('Guest'), 'YC'), level('Guest')));
+   // Bad values.
+-  for (const bad of [{ level: 0 }, { level: 4 }, { level: '2' }, { updatedBy: 'CJ' }, { updatedAt: Timestamp.fromMillis(0) }, { extra: 1 }]) {
++  for (const bad of [{ level: 0 }, { level: 5 }, { level: '2' }, { updatedBy: 'CJ' }, { updatedAt: Timestamp.fromMillis(0) }, { extra: 1 }]) {
+     await assertFails(setDoc(levelRef(db('SL'), 'YC'), level('SL', bad)));
+   }
+   // Nobody deletes the level document.
+@@ -185,6 +217,7 @@ test('KidsChinese: only a parent resets progress (deletes cards and summary)', a
+ test('KidsChinese: preferences: the learner or a parent, with valid values', async () => {
+   await assertSucceeds(setDoc(prefsRef(db('YC'), 'YC'), prefs({ avatar: '🦊', sessionSize: 15 })));
+   await assertSucceeds(setDoc(prefsRef(db('SL'), 'JY'), prefs({ showEnglish: false })));
++  await assertSucceeds(setDoc(prefsRef(db('AMA'), 'YC'), prefs({ sessionSize: 5 })));
+   for (const bad of [
+     { sessionSize: 7 }, { speechRate: 3 }, { speechRate: '0.8' }, { showPinyin: 'yes' },
+     { avatar: 'x'.repeat(17) }, { level: 3 }, { updatedAt: Timestamp.fromMillis(0) },

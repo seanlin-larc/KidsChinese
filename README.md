@@ -14,9 +14,9 @@ It is a static web page (no build step) on GitHub Pages. It uses the **Kids Game
 - **4 levels, set by characters** (see [Levels](#levels)): 學前 Starters (929 words), 初階 Beginner (+583), 四年級 Grade 4 (+97), 小學 Elementary (+26). The words use every one of the 1000 characters of levels 1 and 2.
 - **Answer side in Taiwan textbook style**: Zhuyin runs vertically to the right of each character. Pinyin is below. The English meaning is optional.
 - **Listen button**: the browser reads the word aloud. It uses a Taiwan Mandarin (zh-TW) voice when the device has one.
-- **Kids Games accounts and PINs**: YC and JY are learners. SL and CJ are parents. Guest cannot use KidsChinese. One sign-in covers Kids Games and KidsChinese on a device. 10 wrong PINs (on either site) lock that account on the device for 30 minutes.
+- **Kids Games accounts and PINs**: YC and JY are learners. SL, CJ and 嬤 (grandma) are parents, and they can also study with their own progress. Guest cannot use KidsChinese. One sign-in covers Kids Games and KidsChinese on a device. 10 wrong PINs (on either site) lock that account on the device for 30 minutes.
 - **Progress follows the child**: answers, stars and streaks are saved in Firestore, so they move between the iPad and the computer. After the first sign-in, the app also works offline and sends the answers later.
-- **Parent page** (SL, CJ only): set each child's level, see each child's progress (words learned, stars, streak, progress by deck, words with the most misses), and reset a child's progress. The Firestore rules enforce this on the server: a child cannot change their own level, reset progress, or see the other child's data.
+- **Parent page** (SL, CJ, 嬤 only): set each child's level, see each child's progress (words learned, stars, streak, progress by deck, words with the most misses), and reset a child's progress. The Firestore rules enforce this on the server: a child cannot change their own level, reset progress, or see the other child's data.
 - **Spaced repetition** (Leitner boxes). A card the child knows comes back after 1, 3, 7, 14, then 30 days. A missed card comes back later in the same round, and again the next day.
 - **Rewards**: one star for each right answer, a bonus for a perfect round, a daily goal of 10 cards, and 0–3 stars for each deck.
 
@@ -55,7 +55,7 @@ Sources (checked 2026-11-23):
 Levels 3 and 4 need more words. To add them, follow [Add or change words](#add-or-change-words).
 
 **Level 4 needs a rules change.** The published Kids Games rules accept levels 1–3 only. Until the change
-in [docs/2026-11-23_kidsgames-level4-handoff.md](docs/2026-11-23_kidsgames-level4-handoff.md) is published,
+in [docs/2026-11-23_kidsgames-rules-update-handoff.md](docs/2026-11-23_kidsgames-rules-update-handoff.md) is published,
 a parent cannot select 小學 Elementary (the page shows "Could not set the level").
 
 The level numbers stay the same in Firestore, but their names changed on 2026-11-23:
@@ -74,10 +74,13 @@ Status (2026-11-23): Sean published the merged rules. Kids Games `main` has the 
 | Account | Role | Can do |
 |---|---|---|
 | YC, JY | learner | Study, see and save own progress, change own display settings |
-| SL, CJ | parent | Parent page: set levels, view both children's progress, reset progress |
+| SL, CJ, 嬤 (code `AMA`) | parent | Parent page: set levels, view both children's progress, reset progress. Also study with own progress and own level (a test player) |
 | Guest | — | Nothing. The page asks Guest to sign out |
 
 - The accounts are the Kids Games accounts, `<code>@kidsgames.invalid` (Firebase Email/Password). The PIN is the password (the same PIN as Kids Games). Firebase checks it. No PIN is in this code.
+- The page shows each account's `name` (嬤 for `AMA`, the code for the others).
+- Parents need the Kids Games rules update of 2026-11-23 to study and to use 嬤
+  (see [firebase/SETUP.md](firebase/SETUP.md), sections 1 and 3).
 - The page takes the code and role from the email (`js/accounts.js`), so it also works offline. The Firestore rules check the role with the Kids Games `players/{uid}` document. Delete that document to remove an account's access to both sites.
 - **One sign-in for both sites** on a device (same project, same website). A sign-out on one site also signs out of the other. On a shared iPad, sign out before the other child plays.
 - **Wrong-PIN lock:** 10 wrong PINs in a row lock that account for 30 minutes on that device. The lock key `kg-lock` is shared with Kids Games. This check is in the page only; Firebase also slows down many wrong tries.
@@ -89,10 +92,11 @@ Firestore data:
 Collection `chinese` in the shared Kids Games database:
 
 ```
-chinese/{YC|JY}                 level (parents write)
-chinese/{YC|JY}/data/summary    stars, streak, today's count (the child writes)
-chinese/{YC|JY}/data/prefs      Pinyin, English, cards per round, voice speed, avatar (not shown)
-chinese/{YC|JY}/cards/{cardId}  box, due date, times seen, times right (the child writes)
+chinese/{code}                  level (parents write)
+chinese/{code}/data/summary     stars, streak, today's count (the account itself writes)
+chinese/{code}/data/prefs       Pinyin, English, cards per round, voice speed, avatar (not shown)
+chinese/{code}/cards/{cardId}   box, due date, times seen, times right (the account itself writes)
+{code} = YC, JY, SL, CJ or AMA
 ```
 
 The rules for this collection are the "KidsChinese" block in `kidsgames/firebase/firestore.rules`.
@@ -209,7 +213,7 @@ npm run crosscheck
 index.html               page shell
 css/style.css            styles (light and dark)
 js/app.js                screens: sign-in, learner home, study, settings, parent page
-js/accounts.js           the four accounts and their roles (no Firebase)
+js/accounts.js           the five accounts, their names and roles (no Firebase)
 js/lock.js               wrong-PIN lock on the device (no Firebase)
 js/load.js               loads the Firebase code with a time limit; who is signed in (no Firebase)
 js/stuck.js              "The page did not load. Reload the page." message

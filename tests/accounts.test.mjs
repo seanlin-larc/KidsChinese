@@ -12,7 +12,8 @@ const RULES = process.env.KIDSGAMES_RULES || path.join(repo, '..', 'kidsgames', 
 test('accounts: Kids Games emails, codes and roles; no Guest', () => {
   assert.equal(EMAIL_DOMAIN, '@kidsgames.invalid');
   assert.deepEqual(LEARNERS, ['YC', 'JY']);
-  assert.deepEqual(PARENTS, ['SL', 'CJ']);
+  assert.deepEqual(PARENTS, ['SL', 'CJ', 'AMA']);
+  assert.equal(ACCOUNTS.find((a) => a.code === 'AMA').name, '嬤');
   for (const a of ACCOUNTS) {
     assert.equal(a.email, a.code.toLowerCase() + EMAIL_DOMAIN);
     assert.equal(accountForEmail(a.email.toUpperCase()), a);
@@ -37,7 +38,7 @@ test('the Kids Games rules have the KidsChinese block with the same codes', (t) 
     return [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]).sort();
   };
   assert.deepEqual(codes('kcLearnerCode'), [...LEARNERS].sort());
-  assert.deepEqual(codes('kcParent'), [...PARENTS].sort());
+  assert.deepEqual(codes('kcParentCode'), [...PARENTS].sort());
 });
 
 test('no PIN-like secrets in the account list', () => {

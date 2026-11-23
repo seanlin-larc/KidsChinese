@@ -7,8 +7,9 @@ KidsChinese 使用 **Kids Games** 的 Firebase 專案（`kidsgame-7a262`）和�
 
 | 已完成（Kids Games） | 還要做 |
 |---|---|
-| 帳號 YC、JY、SL、CJ、Guest（`<code>@kidsgames.invalid`），PIN 碼 = 密碼 | 發布含有 KidsChinese 區塊的規則（見下方） |
-| 含有代號的 `players/{uid}` 文件 | 用 SL 登入，設定每個孩子的程度 |
+| 帳號 YC、JY、SL、CJ、Guest（`<code>@kidsgames.invalid`），PIN 碼 = 密碼 | 發布規則更新（第 1 節） |
+| 含有代號的 `players/{uid}` 文件 | 加入嬤（第 3 節） |
+| 含有 KidsChinese 區塊的規則（2026-11-23） | 用 SL 登入，設定每個孩子的程度（第 2 節） |
 | API 金鑰限制：`https://seanlin-larc.github.io/*`、`http://localhost:8000/*` | |
 | Kids Games repo 裡的 `admin/reset-pin.mjs` | |
 
@@ -25,29 +26,70 @@ KidsChinese 的部分是接近結尾的「KidsChinese flash cards」區塊（`ch
 
 不要只發布 KidsChinese 區塊：那樣會刪除 Kids Games 的規則。
 
-KidsChinese 區塊允許的事（角色來自 `players/{uid}.code`）：
+更新後 KidsChinese 區塊允許的事（角色來自 `players/{uid}.code`）：
 
-| | YC / JY（學習者） | SL / CJ（家長） | Guest、其他 |
+| | YC / JY（孩子） | SL / CJ / 嬤（家長） | Guest、其他 |
 |---|---|---|---|
-| 讀取自己的進度 | ✓ | — | ✗ |
-| 讀取另一個學習者的進度 | ✗ | ✓（兩人） | ✗ |
-| 儲存答案、星星、連續天數 | 只限自己 | ✗ | ✗ |
-| 修改顯示設定（拼音、英文） | 只限自己 | ✓ | ✗ |
-| 設定學習者的程度 | ✗ | ✓ | ✗ |
-| 重設學習者的進度 | ✗ | ✓ | ✗ |
+| 讀取、練習和儲存自己的進度 | ✓ | ✓ | ✗ |
+| 讀取孩子的進度 | ✗（只限自己） | ✓（YC 和 JY） | ✗ |
+| 讀取另一位家長的進度 | — | ✗ | ✗ |
+| 修改顯示設定 | 只限自己 | 自己、YC 和 JY | ✗ |
+| 設定程度 | ✗ | 自己、YC 和 JY | ✗ |
+| 重設進度 | ✗ | 自己、YC 和 JY | ✗ |
 
 Kids Games 的規則沒有改變。
 
-待辦（2026-11-23）：第 4 級（小學 Elementary）的規則修改。見
-`docs/2026-11-23_kidsgames-level4-handoff_zhtw.md`。
+**待辦（2026-11-23）：規則更新**，用於第 4 級、家長練習，以及嬤（代號 `AMA`）。
+見 [docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md](../docs/2026-11-23_kidsgames-rules-update-handoff_zhtw.md)。
+發布之前：不能設定第 4 級，SL 和 CJ 看得到家長頁但不能練習，嬤會看到「Cannot read progress」。
 
 ## 2. 設定程度
 
 1. 開啟 https://seanlin-larc.github.io/KidsChinese/，用 **SL** 和 Kids Games 的 PIN 碼登入。
 2. 家長頁會顯示 YC 和 JY。設定每個孩子的**程度**（Level）。
    程度有 學前 Starters、初階 Beginner、四年級 Grade 4 和 小學 Elementary（見 README 的「程度」）。
-   小學 Elementary 需要 `docs/2026-11-23_kidsgames-level4-handoff_zhtw.md` 裡的規則修改。
+   小學 Elementary 需要規則更新（第 1 節）。
+   家長在自己練習頁的 **設定 Settings** 裡設定自己的程度。
 3. 登出。用 **YC** 登入，做一回合，重新整理後確認星星還在。
+
+## 3. 加入嬤（奶奶，代號 AMA）
+
+嬤是家長：她看得到 YC 和 JY 的家長頁，也可以用自己的字卡和程度練習
+（測試玩家）。頁面顯示「嬤」；Firebase 裡的代號是 `AMA`。請依照順序做。
+
+1. **Authentication 使用者——已完成（2026-11-22）。** `ama@kidsgames.invalid`，電子郵件／密碼。
+2. **PIN 碼。** 密碼必須是 6 位數的 PIN 碼：登入頁的數字鍵盤只能輸入 6 位數字。
+   如果建立使用者時輸入了別的密碼，請在你的電腦上、Kids Games repo 的 `admin/` 資料夾設定 PIN 碼：
+
+   ```bash
+   node reset-pin.mjs --player ama
+   ```
+
+   PIN 碼在隱藏的提示中輸入。不要把 PIN 碼寫在對話、筆記或檔案裡。
+3. **Firestore 的 `players/{uid}` 文件。** 沒有這份文件，規則就不知道她是誰。
+   1. Firebase 主控台 → **Authentication** → **Users**。在 `ama@kidsgames.invalid` 那一列，指向
+      **User UID**，按複製圖示。（清單只顯示 UID 的開頭。）
+   2. Firebase 主控台 → **Firestore Database** → **Data** → 集合 **players** → **Add document**。
+   3. **Document ID：** 貼上 UID。不要用 **Auto-ID**。
+   4. 加一個欄位：名稱 `code`，類型 **string**，值 `AMA`（大寫）。按 **Save**。
+   5. 檢查：新文件和其他五份放在一起，每份都有一個 `code` 欄位。
+4. **發布規則更新**（第 1 節）。先由有 `kidsgames` 推送權限的對話套用 patch 並合併（見交接文件）。
+   然後從 Kids Games 的 `main` 發布**完整的**檔案。
+5. **讓新的 KidsChinese 頁面上線：** 把 KidsChinese 分支合併到 `main`。GitHub Pages 大約一分鐘後更新。
+   （第 4、5 步的順序不拘。兩步都完成後，嬤才能使用網站。）
+6. **在手機或 iPad 上測試：**
+   1. 開啟網站。點 **嬤**（在 SL 和 CJ 旁邊），輸入她的 PIN 碼。
+   2. 家長頁會顯示 YC 和 JY。
+   3. 點 **練習 Study**。做一回合。重新整理頁面：星星還在。
+   4. 點 ⚙️ **Settings**，選她自己的程度。點 **家長 Parent** 回到家長頁。
+
+注意：
+
+- 嬤不在 Kids Games 的登入頁上。要加進去，請在 Kids Games repo 的 `shared/session.js` 加一行
+  （這是 Kids Games 的修改；尚未做）。
+- 她的資料在 `chinese/AMA`。Firestore 會在她第一次作答時建立。SL 和 CJ 看不到她的進度，
+  她也看不到他們的。
+- PIN 碼錯誤鎖定（10 次、30 分鐘）對嬤和其他人一樣有效。
 
 ## 共用登入：須知
 

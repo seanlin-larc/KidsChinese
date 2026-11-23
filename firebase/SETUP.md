@@ -1,12 +1,15 @@
 # Firebase setup for KidsChinese
 
+繁體中文版：[SETUP_zhtw.md](SETUP_zhtw.md)
+
 KidsChinese uses the **Kids Games** Firebase project (`kidsgame-7a262`) and its accounts.
 There is no new project, no new account and no new PIN.
 
 | Already done (Kids Games) | Still to do |
 |---|---|
-| Accounts YC, JY, SL, CJ, Guest (`<code>@kidsgames.invalid`), PIN = password | Publish the rules with the KidsChinese block (below) |
-| `players/{uid}` documents with the codes | Sign in as SL and set each child's level |
+| Accounts YC, JY, SL, CJ, Guest (`<code>@kidsgames.invalid`), PIN = password | Publish the rules update (section 1) |
+| `players/{uid}` documents with the codes | Add 嬤 (section 3) |
+| Rules with the KidsChinese block (2026-11-23) | Sign in as SL and set each child's level (section 2) |
 | API key restriction: `https://seanlin-larc.github.io/*`, `http://localhost:8000/*` | |
 | `admin/reset-pin.mjs` in the Kids Games repo | |
 
@@ -23,29 +26,72 @@ The KidsChinese part is the block "KidsChinese flash cards" near the end (collec
 
 Do not publish only the KidsChinese block: that removes the Kids Games rules.
 
-What the KidsChinese block allows (the role comes from `players/{uid}.code`):
+What the KidsChinese block allows after the update (the role comes from `players/{uid}.code`):
 
-| | YC / JY (learner) | SL / CJ (parent) | Guest, others |
+| | YC / JY (child) | SL / CJ / 嬤 (parent) | Guest, others |
 |---|---|---|---|
-| Read own progress | ✓ | — | ✗ |
-| Read the other learner's progress | ✗ | ✓ (both) | ✗ |
-| Save answers, stars, streak | own only | ✗ | ✗ |
-| Change display settings (Pinyin, English) | own only | ✓ | ✗ |
-| Set a learner's level | ✗ | ✓ | ✗ |
-| Reset a learner's progress | ✗ | ✓ | ✗ |
+| Read, study and save own progress | ✓ | ✓ | ✗ |
+| Read the children's progress | ✗ (own only) | ✓ (YC and JY) | ✗ |
+| Read another parent's progress | — | ✗ | ✗ |
+| Change display settings | own only | own, YC and JY | ✗ |
+| Set a level | ✗ | own, YC and JY | ✗ |
+| Reset progress | ✗ | own, YC and JY | ✗ |
 
 The Kids Games rules are not changed.
 
-Pending (2026-11-23): the rules change for level 4 (小學 Elementary). See
-`docs/2026-11-23_kidsgames-level4-handoff.md`.
+**Pending (2026-11-23): the rules update** for level 4, for parents who study, and for 嬤 (code `AMA`).
+See [docs/2026-11-23_kidsgames-rules-update-handoff.md](../docs/2026-11-23_kidsgames-rules-update-handoff.md).
+Until it is published: level 4 cannot be set, SL and CJ see the parent page but cannot study, and 嬤 sees
+"Cannot read progress".
 
 ## 2. Set the levels
 
 1. Open https://seanlin-larc.github.io/KidsChinese/ and sign in as **SL** with the Kids Games PIN.
 2. The parent page shows YC and JY. Set each child's **Level** (程度).
    The levels are 學前 Starters, 初階 Beginner, 四年級 Grade 4 and 小學 Elementary (see README, "Levels").
-   小學 Elementary needs the rules change in `docs/2026-11-23_kidsgames-level4-handoff.md`.
+   小學 Elementary needs the rules update (section 1).
+   A parent sets their own level in **設定 Settings** (on their study page).
 3. Sign out. Sign in as **YC**, do one round, and check that the stars stay after a reload.
+
+## 3. Add 嬤 (grandma, code AMA)
+
+嬤 is a parent: she sees the parent page for YC and JY, and she studies with her own cards and level
+(a test player). The page shows 嬤; the code in Firebase is `AMA`. Do the steps in this order.
+
+1. **Authentication user — done (2026-11-22).** `ama@kidsgames.invalid`, Email/Password.
+2. **PIN.** The password must be the 6-digit PIN: the sign-in page has a number pad with 6 digits only.
+   If you typed another password when you made the user, set a PIN on your computer, in the Kids Games
+   repo `admin/` folder:
+
+   ```bash
+   node reset-pin.mjs --player ama
+   ```
+
+   You type the PIN at a hidden prompt. Do not write the PIN in a chat, a note or a file.
+3. **Firestore `players/{uid}` document.** Without it, the rules do not know who she is.
+   1. Firebase console → **Authentication** → **Users**. In the row `ama@kidsgames.invalid`, point at the
+      **User UID** and click the copy icon. (The list shows only the start of the UID.)
+   2. Firebase console → **Firestore Database** → **Data** → collection **players** → **Add document**.
+   3. **Document ID:** paste the UID. Do not use **Auto-ID**.
+   4. Add one field: name `code`, type **string**, value `AMA` (capital letters). Click **Save**.
+   5. Check: the new document sits next to the other five, and each has one field `code`.
+4. **Publish the rules update** (section 1). First a chat with push access to `kidsgames` applies the
+   patch and merges it (see the handoff). Then publish the **complete** file from Kids Games `main`.
+5. **Put the new KidsChinese page online:** merge the KidsChinese branch to `main`. GitHub Pages updates
+   in about a minute. (Steps 4 and 5 can be in either order. 嬤 can use the site only after both.)
+6. **Test** on a phone or iPad:
+   1. Open the site. Tap **嬤** (next to SL and CJ), then type her PIN.
+   2. The parent page shows YC and JY.
+   3. Tap **練習 Study**. Do one round. Reload the page: the stars stay.
+   4. Tap ⚙️ **Settings** and pick her own level. Tap **家長 Parent** to go back.
+
+Notes:
+
+- 嬤 is not on the Kids Games sign-in page. To add her there, add one line to `shared/session.js` in the
+  Kids Games repo (a Kids Games change; not done).
+- Her data is `chinese/AMA`. Firestore makes it at her first answer. SL and CJ cannot see her progress,
+  and she cannot see theirs.
+- The wrong-PIN lock (10 tries, 30 minutes) works for 嬤 the same as for the others.
 
 ## Shared sign-in: what to know
 
